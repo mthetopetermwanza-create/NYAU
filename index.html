@@ -397,7 +397,54 @@
             margin-bottom: 0.5rem;
             text-shadow: 0 0 20px rgba(198, 12, 48, 0.7);
         }
-        
+        /* Mobile Chrome Canvas Fix */
+#gameCanvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Prevent mobile zoom */
+#gameContainer {
+    touch-action: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+}
+
+/* Fix for mobile address bar hiding */
+@media (max-height: 700px) {
+    #mobileControls {
+        bottom: 15px;
+    }
+    
+    .tap-instruction {
+        bottom: 120px;
+    }
+}
+
+/* Performance fixes */
+.will-change {
+    will-change: transform;
+}
+
+/* Ensure full screen on mobile */
+body, html {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+/* Fix for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+    #gameContainer {
+        height: -webkit-fill-available;
+    }
+}
         .final-score {
             font-size: clamp(1.5rem, 8vw, 2.5rem);
             color: var(--malawi-sun);
@@ -985,1562 +1032,1415 @@
     </div>
 
     <!-- Game JavaScript -->
-    <script>
-        // Game State
-        const GameState = {
-            LOADING: 0,
-            START: 1,
-            TUTORIAL: 2,
-            PLAYING: 3,
-            GAME_OVER: 4,
-            TRANSFORMING: 5
-        };
+   <script>
+    // Game State
+    const GameState = {
+        LOADING: 0,
+        START: 1,
+        TUTORIAL: 2,
+        PLAYING: 3,
+        GAME_OVER: 4,
+        TRANSFORMING: 5
+    };
 
-        let currentState = GameState.LOADING;
-        let score = 0;
-        let utsi = 0;
-        let utsiRequired = 8;
-        let gameSpeed = 3.0; // Reduced from 3.5 for better pacing
-        let tutorialShown = false;
-        let transformationCount = 0;
-        let obstaclesPassed = 0;
-        let utsiCollectedTotal = 0;
-        let powerupsUsed = 0;
-        let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        let audioEnabled = true;
-        let lastObstacleTime = 0;
-        let minObstacleInterval = 1600; // Increased spacing
-        let lastJumpTime = 0;
-        let doubleJumpAvailable = false;
-        let canDoubleJump = false;
-        let highScore = 0;
-        let skipTutorial = localStorage.getItem('nyau_skip_tutorial') === 'true';
-        
-        // Power-up system
-        const PowerUp = {
-            NONE: 0,
-            MAGNETIC: 1,    // Attracts Utsi
-            SHIELD: 2,      // One-time protection
-            SPEED: 3        // Temporary speed boost
-        };
-        
-        let activePowerUp = PowerUp.NONE;
-        let powerUpTimer = 0;
-        let powerUpDuration = 300; // 5 seconds at 60fps
-        
-        // Canvas and Context
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        // DOM Elements
-        const loadingScreen = document.getElementById('loadingScreen');
-        const startScreen = document.getElementById('startScreen');
-        const tutorialOverlay = document.getElementById('tutorialOverlay');
-        const gameOverScreen = document.getElementById('gameOverScreen');
-        const startButton = document.getElementById('startButton');
-        const viewTutorialBtn = document.getElementById('viewTutorialBtn');
-        const viewCreditsBtn = document.getElementById('viewCreditsBtn');
-        const scoreValue = document.getElementById('scoreValue');
-        const highScoreValue = document.getElementById('highScoreValue');
-        const utsiValue = document.getElementById('utsiValue');
-        const utsiRequiredEl = document.getElementById('utsiRequired');
-        const currentChar = document.getElementById('currentChar');
-        const charType = document.getElementById('charType');
-        const finalScore = document.getElementById('finalScore');
-        const finalHighScore = document.getElementById('finalHighScore');
-        const spiritsCount = document.getElementById('spiritsCount');
-        const finalMessage = document.getElementById('finalMessage');
-        const restartBtn = document.getElementById('restartBtn');
-        const menuBtn = document.getElementById('menuBtn');
-        const shareBtn = document.getElementById('shareBtn');
-        const tutorialClose = document.getElementById('tutorialClose');
-        const skipTutorialBtn = document.getElementById('skipTutorial');
-        const mobileControls = document.getElementById('mobileControls');
-        const transformationOverlay = document.getElementById('transformationOverlay');
-        const audioToggle = document.getElementById('audioToggle');
-        const rhythmPulse = document.getElementById('rhythmPulse');
-        const magneticEffect = document.getElementById('magneticEffect');
-        const shieldEffect = document.getElementById('shieldEffect');
-        const powerupDisplay = document.getElementById('powerupDisplay');
-        const magneticTimer = document.getElementById('magneticTimer');
-        const desktopHint = document.getElementById('desktopHint');
-        const breakdownTransformations = document.getElementById('breakdownTransformations');
-        const breakdownObstacles = document.getElementById('breakdownObstacles');
-        const breakdownUtsi = document.getElementById('breakdownUtsi');
-        const breakdownPowerups = document.getElementById('breakdownPowerups');
-        
-        // Game Objects
-        const player = {
-            x: 150,
-            y: 0,
-            width: 80,
-            height: 140,
-            velocityY: 0,
-            isJumping: false,
-            isDucking: false,
-            duckTimer: 0,
-            character: 'MWANA',
+    let currentState = GameState.LOADING;
+    let score = 0;
+    let utsi = 0;
+    let utsiRequired = 8;
+    let gameSpeed = 2.8; // Even slower for mobile
+    let tutorialShown = false;
+    let transformationCount = 0;
+    let obstaclesPassed = 0;
+    let utsiCollectedTotal = 0;
+    let powerupsUsed = 0;
+    let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let audioEnabled = true;
+    let lastObstacleTime = 0;
+    let minObstacleInterval = 1800; // More spacing
+    let lastJumpTime = 0;
+    let doubleJumpAvailable = false;
+    let canDoubleJump = false;
+    let highScore = 0;
+    let skipTutorial = localStorage.getItem('nyau_skip_tutorial') === 'true';
+    let isPortrait = window.innerHeight > window.innerWidth;
+    
+    // Power-up system
+    const PowerUp = {
+        NONE: 0,
+        MAGNETIC: 1,    // Attracts Utsi
+        SHIELD: 2,      // One-time protection
+        SPEED: 3        // Temporary speed boost
+    };
+    
+    let activePowerUp = PowerUp.NONE;
+    let powerUpTimer = 0;
+    let powerUpDuration = 300; // 5 seconds at 60fps
+    
+    // Canvas and Context
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d', { alpha: false }); // Disable alpha for performance
+    
+    // DOM Elements
+    const loadingScreen = document.getElementById('loadingScreen');
+    const startScreen = document.getElementById('startScreen');
+    const tutorialOverlay = document.getElementById('tutorialOverlay');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const startButton = document.getElementById('startButton');
+    const viewTutorialBtn = document.getElementById('viewTutorialBtn');
+    const viewCreditsBtn = document.getElementById('viewCreditsBtn');
+    const scoreValue = document.getElementById('scoreValue');
+    const highScoreValue = document.getElementById('highScoreValue');
+    const utsiValue = document.getElementById('utsiValue');
+    const utsiRequiredEl = document.getElementById('utsiRequired');
+    const currentChar = document.getElementById('currentChar');
+    const charType = document.getElementById('charType');
+    const finalScore = document.getElementById('finalScore');
+    const finalHighScore = document.getElementById('finalHighScore');
+    const spiritsCount = document.getElementById('spiritsCount');
+    const finalMessage = document.getElementById('finalMessage');
+    const restartBtn = document.getElementById('restartBtn');
+    const menuBtn = document.getElementById('menuBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const tutorialClose = document.getElementById('tutorialClose');
+    const skipTutorialBtn = document.getElementById('skipTutorial');
+    const mobileControls = document.getElementById('mobileControls');
+    const transformationOverlay = document.getElementById('transformationOverlay');
+    const audioToggle = document.getElementById('audioToggle');
+    const rhythmPulse = document.getElementById('rhythmPulse');
+    const magneticEffect = document.getElementById('magneticEffect');
+    const shieldEffect = document.getElementById('shieldEffect');
+    const powerupDisplay = document.getElementById('powerupDisplay');
+    const magneticTimer = document.getElementById('magneticTimer');
+    const desktopHint = document.getElementById('desktopHint');
+    const breakdownTransformations = document.getElementById('breakdownTransformations');
+    const breakdownObstacles = document.getElementById('breakdownObstacles');
+    const breakdownUtsi = document.getElementById('breakdownUtsi');
+    const breakdownPowerups = document.getElementById('breakdownPowerups');
+    
+    // Game Objects
+    const player = {
+        x: 150,
+        y: 0,
+        width: 80,
+        height: 140,
+        velocityY: 0,
+        isJumping: false,
+        isDucking: false,
+        duckTimer: 0,
+        character: 'MWANA',
+        color: '#F0F3F5',
+        maskColor: '#5D4037',
+        danceStep: 0,
+        invulnerable: 0,
+        trail: [],
+        hasShield: false,
+        lastGroundY: 0
+    };
+    
+    let obstacles = [];
+    let utsiParticles = [];
+    let powerUps = [];
+    let backgroundElements = [];
+    let particles = [];
+    let groundY;
+    let warningIndicators = [];
+    let backgroundDancers = [];
+    let rhythmTimer = 0;
+    let animationFrameId = null;
+    let lastRenderTime = 0;
+    
+    // Character definitions
+    const characters = {
+        'MWANA': {
+            name: 'MWANA',
+            type: 'HUMAN INITIATE',
             color: '#F0F3F5',
             maskColor: '#5D4037',
-            danceStep: 0,
-            invulnerable: 0,
-            trail: [],
-            hasShield: false,
-            lastGroundY: 0
-        };
+            jumpHeight: 22,
+            duckDuration: 25,
+            width: 80,
+            height: 140,
+            speed: 0.8,
+            shape: 'human',
+            doubleJump: false,
+            description: 'The beginner dancer, learning the ways of Nyau'
+        },
+        'NJOBVU': {
+            name: 'NJOBVU',
+            type: 'ELEPHANT SPIRIT',
+            color: '#5D4037',
+            maskColor: '#3E2723',
+            jumpHeight: 18,
+            duckDuration: 30,
+            width: 120,
+            height: 100,
+            speed: 0.7,
+            shape: 'elephant',
+            doubleJump: false,
+            description: 'Strong and steady, the elephant spirit teaches patience'
+        },
+        'KAMBIYA': {
+            name: 'KAMBIŴA',
+            type: 'ANTELOPE SPIRIT',
+            color: '#A0522D',
+            maskColor: '#8B4513',
+            jumpHeight: 26,
+            duckDuration: 20,
+            width: 90,
+            height: 120,
+            speed: 0.9,
+            shape: 'antelope',
+            doubleJump: true,
+            description: 'Swift and agile, the antelope spirit brings speed'
+        },
+        'MKANGO': {
+            name: 'MKANGO',
+            type: 'LION SPIRIT',
+            color: '#D2691E',
+            maskColor: '#8B4513',
+            jumpHeight: 24,
+            duckDuration: 22,
+            width: 100,
+            height: 110,
+            speed: 1.0,
+            shape: 'lion',
+            doubleJump: true,
+            description: 'The king of spirits, brings power and majesty'
+        }
+    };
+    
+    // FIXED: Initialize canvas size for mobile
+    function initCanvas() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2); // Limit to 2x for performance
         
-        let obstacles = [];
-        let utsiParticles = [];
-        let powerUps = [];
-        let backgroundElements = [];
-        let particles = [];
-        let groundY;
-        let warningIndicators = [];
-        let backgroundDancers = [];
-        let rhythmTimer = 0;
+        // Get actual display size (accounting for mobile browser UI)
+        const displayWidth = window.innerWidth;
+        const displayHeight = window.innerHeight;
         
-        // Enhanced character definitions
-        const characters = {
-            'MWANA': {
-                name: 'MWANA',
-                type: 'HUMAN INITIATE',
-                color: '#F0F3F5',
-                maskColor: '#5D4037',
-                jumpHeight: 22,
-                duckDuration: 25,
-                width: 80,
-                height: 140,
-                speed: 0.8,
-                shape: 'human',
-                doubleJump: false,
-                description: 'The beginner dancer, learning the ways of Nyau'
-            },
-            'NJOBVU': {
-                name: 'NJOBVU',
-                type: 'ELEPHANT SPIRIT',
-                color: '#5D4037',
-                maskColor: '#3E2723',
-                jumpHeight: 18,
-                duckDuration: 30,
-                width: 120,
-                height: 100,
-                speed: 0.7,
-                shape: 'elephant',
-                doubleJump: false,
-                description: 'Strong and steady, the elephant spirit teaches patience'
-            },
-            'KAMBIYA': {
-                name: 'KAMBIŴA',
-                type: 'ANTELOPE SPIRIT',
-                color: '#A0522D',
-                maskColor: '#8B4513',
-                jumpHeight: 26,
-                duckDuration: 20,
-                width: 90,
-                height: 120,
-                speed: 0.9,
-                shape: 'antelope',
-                doubleJump: true,
-                description: 'Swift and agile, the antelope spirit brings speed'
-            },
-            'MKANGO': {
-                name: 'MKANGO',
-                type: 'LION SPIRIT',
-                color: '#D2691E',
-                maskColor: '#8B4513',
-                jumpHeight: 24,
-                duckDuration: 22,
-                width: 100,
-                height: 110,
-                speed: 1.0,
-                shape: 'lion',
-                doubleJump: true,
-                description: 'The king of spirits, brings power and majesty'
-            }
-        };
+        // Set canvas size to match display
+        canvas.style.width = displayWidth + 'px';
+        canvas.style.height = displayHeight + 'px';
         
-        // Initialize canvas size
-        function initCanvas() {
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            
-            ctx.scale(dpr, dpr);
-            canvas.style.width = rect.width + 'px';
-            canvas.style.height = rect.height + 'px';
-            
-            groundY = canvas.height * 0.7;
-            player.y = groundY - characters[player.character].height;
-            player.lastGroundY = player.y;
-            
-            // Show desktop hint on non-mobile
-            if (!isMobile) {
+        // Set actual canvas resolution
+        canvas.width = Math.floor(displayWidth * dpr);
+        canvas.height = Math.floor(displayHeight * dpr);
+        
+        // Scale context for crisp rendering
+        ctx.scale(dpr, dpr);
+        
+        // Calculate ground position (70% from top)
+        groundY = displayHeight * 0.7;
+        player.y = groundY - characters[player.character].height;
+        player.lastGroundY = player.y;
+        
+        // Clear any previous content
+        ctx.fillStyle = '#0A0E14';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Show desktop hint on non-mobile
+        if (!isMobile) {
+            setTimeout(() => {
+                desktopHint.style.opacity = '1';
                 setTimeout(() => {
-                    desktopHint.style.opacity = '1';
-                    setTimeout(() => {
-                        desktopHint.style.opacity = '0';
-                    }, 3000);
-                }, 1000);
-            }
+                    desktopHint.style.opacity = '0';
+                }, 3000);
+            }, 1000);
         }
         
-        // Load high score from localStorage
-        function loadHighScore() {
-            const saved = localStorage.getItem('nyau_high_score');
-            highScore = saved ? parseInt(saved) : 0;
+        // Check orientation
+        isPortrait = window.innerHeight > window.innerWidth;
+        if (isPortrait && isMobile) {
+            // Show orientation warning
+            const warning = document.createElement('div');
+            warning.id = 'orientationWarning';
+            warning.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(10, 14, 20, 0.95);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+                color: var(--malawi-sun);
+                text-align: center;
+                padding: 20px;
+                font-family: 'Poppins', sans-serif;
+            `;
+            warning.innerHTML = `
+                <h2 style="font-size: 1.8rem; margin-bottom: 20px;">ROTATE DEVICE</h2>
+                <p style="font-size: 1.1rem; margin-bottom: 30px;">Please rotate your device to landscape mode for the best dance experience.</p>
+                <div style="font-size: 4rem;">↻</div>
+            `;
+            document.getElementById('gameContainer').appendChild(warning);
+        } else {
+            const warning = document.getElementById('orientationWarning');
+            if (warning) {
+                warning.remove();
+            }
+        }
+    }
+    
+    // Load high score from localStorage
+    function loadHighScore() {
+        const saved = localStorage.getItem('nyau_high_score');
+        highScore = saved ? parseInt(saved) : 0;
+        highScoreValue.textContent = highScore;
+    }
+    
+    // Save high score
+    function saveHighScore() {
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('nyau_high_score', highScore.toString());
             highScoreValue.textContent = highScore;
+            return true;
         }
+        return false;
+    }
+    
+    // Initialize game
+    function init() {
+        // Prevent default touch behaviors
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
         
-        // Save high score
-        function saveHighScore() {
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('nyau_high_score', highScore.toString());
-                highScoreValue.textContent = highScore;
-                return true;
-            }
-            return false;
-        }
+        document.addEventListener('touchend', function(e) {
+            e.preventDefault();
+        }, { passive: false });
         
-        // Initialize game
-        function init() {
-            initCanvas();
-            loadHighScore();
-            
-            // Simulate loading
+        initCanvas();
+        loadHighScore();
+        
+        // Simulate loading
+        setTimeout(() => {
+            loadingScreen.style.opacity = '0';
             setTimeout(() => {
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                    currentState = GameState.START;
-                    setupEventListeners();
-                    
-                    // Show mobile controls on mobile
-                    if (isMobile) {
-                        mobileControls.style.display = 'flex';
-                    }
-                    
-                    // Register service worker for PWA
-                    if ('serviceWorker' in navigator) {
-                        navigator.serviceWorker.register('service-worker.js')
-                            .catch(err => console.log('Service Worker registration failed: ', err));
-                    }
-                }, 500);
-            }, 1500);
-        }
-        
-        // Create jungle atmosphere
-        function createJungleAtmosphere() {
-            rhythmPulse.style.display = 'block';
-            createBackgroundDancers();
-            
-            // Start ambient effects
-            setInterval(() => {
-                if (currentState === GameState.PLAYING && audioEnabled) {
-                    const symbols = ['🐦', '🌿', '🥁', '🎵', '🔥', '💧'];
-                    createFloatingSymbol(symbols[Math.floor(Math.random() * symbols.length)]);
-                }
-            }, 4000);
-        }
-        
-        function createBackgroundDancers() {
-            backgroundDancers = [];
-            const dancerCount = isMobile ? 3 : 5;
-            for (let i = 0; i < dancerCount; i++) {
-                backgroundDancers.push({
-                    x: -100 - i * 200,
-                    y: groundY - 100,
-                    width: 60,
-                    height: 100,
-                    speed: 0.5,
-                    danceStep: Math.random() * 100,
-                    type: 'dancer'
-                });
-            }
-        }
-        
-        function createFloatingSymbol(symbol) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: canvas.height + 50,
-                symbol: symbol,
-                color: '#339E35',
-                life: 100,
-                maxLife: 100,
-                vy: -0.8,
-                vx: Math.random() * 0.5 - 0.25
-            });
-        }
-        
-        // Start game
-        function startGame() {
-            if (!tutorialShown && !skipTutorial) {
-                currentState = GameState.TUTORIAL;
-                tutorialOverlay.style.display = 'flex';
-                return;
-            }
-            
-            currentState = GameState.PLAYING;
-            startScreen.style.opacity = '0';
-            setTimeout(() => {
-                startScreen.style.display = 'none';
+                loadingScreen.style.display = 'none';
+                currentState = GameState.START;
+                setupEventListeners();
+                
+                // Show mobile controls on mobile
                 if (isMobile) {
                     mobileControls.style.display = 'flex';
                 }
-                rhythmPulse.style.display = 'block';
+                
+                // Register service worker for PWA
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('service-worker.js')
+                        .catch(err => console.log('Service Worker registration failed: ', err));
+                }
             }, 500);
+        }, 1000); // Shorter loading time
+    }
+    
+    // Create jungle atmosphere
+    function createJungleAtmosphere() {
+        rhythmPulse.style.display = 'block';
+        createBackgroundDancers();
+    }
+    
+    function createBackgroundDancers() {
+        backgroundDancers = [];
+        const dancerCount = isMobile ? 2 : 4;
+        for (let i = 0; i < dancerCount; i++) {
+            backgroundDancers.push({
+                x: -100 - i * 200,
+                y: groundY - 100,
+                width: 60,
+                height: 100,
+                speed: 0.5,
+                danceStep: Math.random() * 100,
+                type: 'dancer'
+            });
+        }
+    }
+    
+    // Start game
+    function startGame() {
+        if (!tutorialShown && !skipTutorial) {
+            currentState = GameState.TUTORIAL;
+            tutorialOverlay.style.display = 'flex';
+            return;
+        }
+        
+        currentState = GameState.PLAYING;
+        startScreen.style.opacity = '0';
+        setTimeout(() => {
+            startScreen.style.display = 'none';
+            if (isMobile) {
+                mobileControls.style.display = 'flex';
+            }
+            rhythmPulse.style.display = 'block';
+        }, 300);
+        
+        // Reset stats
+        score = 0;
+        utsi = 0;
+        utsiRequired = 8;
+        gameSpeed = 2.8;
+        transformationCount = 0;
+        obstaclesPassed = 0;
+        utsiCollectedTotal = 0;
+        powerupsUsed = 0;
+        
+        // Reset player
+        player.character = 'MWANA';
+        player.color = characters.MWANA.color;
+        player.maskColor = characters.MWANA.maskColor;
+        player.width = characters.MWANA.width;
+        player.height = characters.MWANA.height;
+        player.x = 150;
+        player.y = groundY - characters.MWANA.height;
+        player.velocityY = 0;
+        player.isJumping = false;
+        player.isDucking = false;
+        player.duckTimer = 0;
+        player.trail = [];
+        player.hasShield = false;
+        
+        // Reset power-ups
+        activePowerUp = PowerUp.NONE;
+        powerUpTimer = 0;
+        powerupDisplay.style.display = 'none';
+        magneticEffect.className = 'powerup-effect';
+        shieldEffect.className = 'powerup-effect';
+        
+        updateCharacterUI();
+        
+        // Clear game objects
+        obstacles = [];
+        utsiParticles = [];
+        powerUps = [];
+        particles = [];
+        warningIndicators = [];
+        backgroundDancers = [];
+        
+        initBackground();
+        createJungleAtmosphere();
+        
+        lastObstacleTime = Date.now();
+        lastJumpTime = 0;
+        canDoubleJump = false;
+        lastRenderTime = 0;
+        
+        // Cancel any existing animation frame
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        
+        gameLoop();
+    }
+    
+    function initBackground() {
+        backgroundElements = [];
+        
+        // Mountains
+        for (let i = 0; i < 6; i++) {
+            backgroundElements.push({
+                x: Math.random() * canvas.width,
+                y: groundY * 0.4 + Math.random() * groundY * 0.2,
+                width: 100 + Math.random() * 200,
+                height: 50 + Math.random() * 100,
+                color: i % 3 === 0 ? '#1A5F23' : (i % 3 === 1 ? '#0F4A15' : '#093B0E'),
+                speed: 0.3 + Math.random() * 1.0,
+                type: 'mountain'
+            });
+        }
+        
+        // Grass
+        for (let i = 0; i < 12; i++) {
+            backgroundElements.push({
+                x: Math.random() * canvas.width,
+                y: groundY + 10,
+                width: 10 + Math.random() * 30,
+                height: 20 + Math.random() * 40,
+                color: '#339E35',
+                speed: 1.5 + Math.random() * 2,
+                type: 'grass'
+            });
+        }
+    }
+    
+    // SIMPLIFIED: Draw player (optimized for mobile)
+    function drawPlayer() {
+        const char = characters[player.character];
+        const danceOffset = Math.sin(player.danceStep * 0.1) * 5;
+        const centerX = player.x + player.width / 2;
+        const centerY = player.y + player.height / 2;
+        
+        // Draw shield if active
+        if (player.hasShield) {
+            ctx.strokeStyle = 'rgba(51, 158, 53, 0.6)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, Math.max(player.width, player.height) / 2 + 10, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        // Draw body with SIMPLE shapes for mobile performance
+        ctx.fillStyle = player.color;
+        
+        if (char.shape === 'human') {
+            // Simple human shape
+            ctx.fillRect(centerX - 25, player.y + danceOffset + 20, 50, 100);
             
-            // Reset stats
-            score = 0;
-            utsi = 0;
-            utsiRequired = 8;
-            gameSpeed = 3.0;
-            transformationCount = 0;
-            obstaclesPassed = 0;
-            utsiCollectedTotal = 0;
-            powerupsUsed = 0;
+            // Head
+            ctx.beginPath();
+            ctx.arc(centerX, player.y + danceOffset + 15, 20, 0, Math.PI * 2);
+            ctx.fill();
             
-            // Reset player
-            player.character = 'MWANA';
-            player.color = characters.MWANA.color;
-            player.maskColor = characters.MWANA.maskColor;
-            player.width = characters.MWANA.width;
-            player.height = characters.MWANA.height;
-            player.x = 150;
-            player.y = groundY - characters.MWANA.height;
+        } else if (char.shape === 'elephant') {
+            // Simple elephant
+            ctx.beginPath();
+            ctx.ellipse(centerX, player.y + danceOffset + 60, 
+                       player.width * 0.4, player.height * 0.3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+        } else if (char.shape === 'antelope') {
+            // Simple antelope
+            ctx.beginPath();
+            ctx.ellipse(centerX, player.y + danceOffset + 70, 
+                       player.width * 0.3, player.height * 0.25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+        } else if (char.shape === 'lion') {
+            // Simple lion
+            ctx.beginPath();
+            ctx.ellipse(centerX, player.y + danceOffset + 70, 
+                       player.width * 0.35, player.height * 0.28, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Simple mask for all characters
+        ctx.fillStyle = player.maskColor;
+        ctx.beginPath();
+        ctx.arc(centerX, player.y + danceOffset + 15, 15, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    // Enhanced input handling with touch optimization
+    let jumpDebounce = false;
+    let duckDebounce = false;
+    let touchStartY = 0;
+    let touchStartX = 0;
+    let isSwiping = false;
+    
+    function handleJump() {
+        if (currentState !== GameState.PLAYING) return;
+        
+        const now = Date.now();
+        
+        // Double jump check
+        if (player.isJumping && characters[player.character].doubleJump && 
+            now - lastJumpTime < 300 && canDoubleJump) {
+            player.velocityY = -characters[player.character].jumpHeight * 0.8;
+            canDoubleJump = false;
+            lastJumpTime = now;
+            return;
+        }
+        
+        // Normal jump
+        if (player.isJumping || player.isDucking || jumpDebounce) return;
+        
+        jumpDebounce = true;
+        player.isJumping = true;
+        player.velocityY = -characters[player.character].jumpHeight;
+        lastJumpTime = now;
+        canDoubleJump = true;
+        
+        // Visual feedback
+        if (isMobile) {
+            const jumpBtn = document.querySelector('.control-btn.jump');
+            if (jumpBtn) {
+                jumpBtn.style.transform = 'scale(0.85)';
+                setTimeout(() => {
+                    jumpBtn.style.transform = 'scale(1)';
+                }, 150);
+            }
+        }
+        
+        setTimeout(() => { jumpDebounce = false; }, 150);
+    }
+    
+    function handleDuck() {
+        if (player.isDucking || player.isJumping || duckDebounce || currentState !== GameState.PLAYING) return;
+        
+        duckDebounce = true;
+        player.isDucking = true;
+        player.duckTimer = characters[player.character].duckDuration;
+        player.height = characters[player.character].height * 0.6;
+        
+        // Visual feedback
+        if (isMobile) {
+            const duckBtn = document.querySelector('.control-btn.duck');
+            if (duckBtn) {
+                duckBtn.style.transform = 'scale(0.85)';
+                setTimeout(() => {
+                    duckBtn.style.transform = 'scale(1)';
+                }, 150);
+            }
+        }
+        
+        setTimeout(() => { duckDebounce = false; }, 150);
+    }
+    
+    // Power-up system
+    function activatePowerUp(type) {
+        activePowerUp = type;
+        powerUpTimer = powerUpDuration;
+        powerupsUsed++;
+        
+        switch(type) {
+            case PowerUp.MAGNETIC:
+                powerupDisplay.style.display = 'flex';
+                magneticEffect.className = 'powerup-effect magnetic-effect';
+                magneticEffect.style.opacity = '1';
+                break;
+                
+            case PowerUp.SHIELD:
+                player.hasShield = true;
+                shieldEffect.className = 'powerup-effect shield-effect';
+                shieldEffect.style.opacity = '1';
+                break;
+                
+            case PowerUp.SPEED:
+                gameSpeed += 1.5;
+                break;
+        }
+    }
+    
+    function updatePowerUps() {
+        if (activePowerUp !== PowerUp.NONE) {
+            powerUpTimer--;
+            magneticTimer.textContent = Math.ceil(powerUpTimer / 60);
+            
+            if (powerUpTimer <= 0) {
+                deactivatePowerUp();
+            }
+        }
+    }
+    
+    function deactivatePowerUp() {
+        switch(activePowerUp) {
+            case PowerUp.MAGNETIC:
+                magneticEffect.style.opacity = '0';
+                break;
+            case PowerUp.SHIELD:
+                player.hasShield = false;
+                shieldEffect.style.opacity = '0';
+                break;
+            case PowerUp.SPEED:
+                gameSpeed -= 1.5;
+                break;
+        }
+        
+        activePowerUp = PowerUp.NONE;
+        powerupDisplay.style.display = 'none';
+    }
+    
+    function transformCharacter() {
+        currentState = GameState.TRANSFORMING;
+        transformationCount++;
+        
+        const transformationSequence = ['MWANA', 'NJOBVU', 'KAMBIYA', 'MKANGO'];
+        const currentIndex = transformationSequence.indexOf(player.character);
+        const nextIndex = (currentIndex + 1) % transformationSequence.length;
+        const nextChar = transformationSequence[nextIndex];
+        
+        // Show transformation effect
+        transformationOverlay.style.animation = 'none';
+        void transformationOverlay.offsetWidth;
+        transformationOverlay.style.animation = 'transformFlash 1s ease-out';
+        
+        // Update player
+        player.character = nextChar;
+        player.color = characters[nextChar].color;
+        player.maskColor = characters[nextChar].maskColor;
+        player.width = characters[nextChar].width;
+        player.height = characters[nextChar].height;
+        player.isDucking = false;
+        player.duckTimer = 0;
+        player.y = groundY - player.height;
+        
+        // Update UI
+        currentChar.textContent = characters[nextChar].name;
+        charType.textContent = characters[nextChar].type;
+        
+        // Increase required utsi
+        utsiRequired = Math.floor(utsiRequired * 1.5);
+        utsi = 0;
+        
+        // Return to playing state
+        setTimeout(() => {
+            if (currentState === GameState.TRANSFORMING) {
+                currentState = GameState.PLAYING;
+            }
+        }, 800);
+        
+        updateCharacterUI();
+    }
+    
+    function updateCharacterUI() {
+        scoreValue.textContent = score;
+        utsiValue.textContent = utsi;
+        utsiRequiredEl.textContent = utsiRequired;
+        highScoreValue.textContent = highScore;
+    }
+    
+    // OPTIMIZED game loop for mobile
+    function gameLoop(timestamp) {
+        if (currentState !== GameState.PLAYING && currentState !== GameState.TRANSFORMING) {
+            animationFrameId = null;
+            return;
+        }
+        
+        // Calculate delta time for consistent speed
+        const deltaTime = timestamp ? (timestamp - lastRenderTime) / 16.67 : 1;
+        lastRenderTime = timestamp || 0;
+        
+        update(deltaTime);
+        render();
+        
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+    
+    function update(deltaTime = 1) {
+        rhythmTimer++;
+        
+        // Update player
+        player.y += player.velocityY * deltaTime;
+        player.velocityY += 0.6 * deltaTime; // Reduced gravity
+        
+        // Ground collision
+        const groundLevel = groundY - player.height;
+        if (player.y > groundLevel) {
+            player.y = groundLevel;
             player.velocityY = 0;
             player.isJumping = false;
-            player.isDucking = false;
-            player.duckTimer = 0;
-            player.trail = [];
-            player.hasShield = false;
-            
-            // Reset power-ups
-            activePowerUp = PowerUp.NONE;
-            powerUpTimer = 0;
-            powerupDisplay.style.display = 'none';
-            magneticEffect.className = 'powerup-effect';
-            shieldEffect.className = 'powerup-effect';
-            
-            updateCharacterUI();
-            
-            // Clear game objects
-            obstacles = [];
-            utsiParticles = [];
-            powerUps = [];
-            particles = [];
-            warningIndicators = [];
-            backgroundDancers = [];
-            
-            initBackground();
-            createJungleAtmosphere();
-            
-            lastObstacleTime = Date.now();
-            lastJumpTime = 0;
-            canDoubleJump = false;
-            
-            gameLoop();
+            player.lastGroundY = player.y;
+            canDoubleJump = characters[player.character].doubleJump;
         }
         
-        function initBackground() {
-            backgroundElements = [];
-            
-            // Mountains
-            for (let i = 0; i < 8; i++) {
-                backgroundElements.push({
-                    x: Math.random() * canvas.width,
-                    y: canvas.height * 0.3 + Math.random() * canvas.height * 0.2,
-                    width: 100 + Math.random() * 200,
-                    height: 50 + Math.random() * 100,
-                    color: i % 3 === 0 ? '#1A5F23' : (i % 3 === 1 ? '#0F4A15' : '#093B0E'),
-                    speed: 0.3 + Math.random() * 1.0,
-                    type: 'mountain'
-                });
-            }
-            
-            // Grass
-            for (let i = 0; i < 15; i++) {
-                backgroundElements.push({
-                    x: Math.random() * canvas.width,
-                    y: groundY + 10,
-                    width: 10 + Math.random() * 30,
-                    height: 20 + Math.random() * 40,
-                    color: '#339E35',
-                    speed: 1.5 + Math.random() * 2,
-                    type: 'grass'
-                });
-            }
-            
-            // Distant trees
-            for (let i = 0; i < 6; i++) {
-                backgroundElements.push({
-                    x: Math.random() * canvas.width,
-                    y: groundY - 80,
-                    width: 40,
-                    height: 80 + Math.random() * 40,
-                    color: '#1A5F23',
-                    speed: 0.5 + Math.random() * 0.5,
-                    type: 'tree'
-                });
+        // Update duck timer
+        if (player.isDucking) {
+            player.duckTimer--;
+            if (player.duckTimer <= 0) {
+                player.isDucking = false;
+                player.height = characters[player.character].height;
             }
         }
         
-        // Enhanced player drawing with shield
-        function drawPlayer() {
-            const char = characters[player.character];
-            const danceOffset = Math.sin(player.danceStep * 0.1) * 5;
-            const centerX = player.x + player.width / 2;
-            const centerY = player.y + player.height / 2;
-            
-            // Draw shield if active
-            if (player.hasShield) {
-                ctx.strokeStyle = 'rgba(51, 158, 53, 0.6)';
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, Math.max(player.width, player.height) / 2 + 10, 0, Math.PI * 2);
-                ctx.stroke();
-                
-                ctx.fillStyle = 'rgba(51, 158, 53, 0.2)';
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, Math.max(player.width, player.height) / 2 + 8, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // Draw body
-            ctx.fillStyle = player.color;
-            
-            if (char.shape === 'human') {
-                // Head
-                ctx.beginPath();
-                ctx.arc(centerX, player.y + danceOffset + 40, 25, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Body
-                ctx.fillRect(centerX - 20, player.y + danceOffset + 65, 40, 60);
-                
-                // Arms
-                ctx.fillRect(centerX - 40, player.y + danceOffset + 70, 20, 50);
-                ctx.fillRect(centerX + 20, player.y + danceOffset + 70, 20, 50);
-                
-                // Legs
-                ctx.fillRect(centerX - 15, player.y + danceOffset + 125, 15, 40);
-                ctx.fillRect(centerX, player.y + danceOffset + 125, 15, 40);
-                
-            } else if (char.shape === 'elephant') {
-                // Elephant body
-                ctx.beginPath();
-                ctx.ellipse(centerX, player.y + danceOffset + 70, 
-                           player.width * 0.4, player.height * 0.3, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Head
-                ctx.beginPath();
-                ctx.arc(player.x + player.width * 0.8, player.y + danceOffset + 50, 30, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Trunk
-                ctx.strokeStyle = player.color;
-                ctx.lineWidth = 10;
-                ctx.beginPath();
-                ctx.moveTo(player.x + player.width * 0.8 + 20, player.y + danceOffset + 50);
-                ctx.quadraticCurveTo(
-                    player.x + player.width * 0.9, player.y + danceOffset + 70,
-                    player.x + player.width * 0.8, player.y + danceOffset + 90
-                );
-                ctx.stroke();
-                
-            } else if (char.shape === 'antelope') {
-                // Antelope body
-                ctx.beginPath();
-                ctx.ellipse(centerX, player.y + danceOffset + 70, 
-                           player.width * 0.3, player.height * 0.25, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Neck and head
-                ctx.beginPath();
-                ctx.ellipse(player.x + player.width * 0.7, player.y + danceOffset + 40, 
-                           25, 40, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Horns
-                ctx.strokeStyle = player.maskColor;
-                ctx.lineWidth = 5;
-                ctx.beginPath();
-                ctx.moveTo(player.x + player.width * 0.7 + 10, player.y + danceOffset + 20);
-                ctx.lineTo(player.x + player.width * 0.7 + 20, player.y + danceOffset + 5);
-                ctx.stroke();
-                
-                ctx.beginPath();
-                ctx.moveTo(player.x + player.width * 0.7 - 10, player.y + danceOffset + 20);
-                ctx.lineTo(player.x + player.width * 0.7 - 20, player.y + danceOffset + 5);
-                ctx.stroke();
-                
-            } else if (char.shape === 'lion') {
-                // Lion body
-                ctx.beginPath();
-                ctx.ellipse(centerX, player.y + danceOffset + 70, 
-                           player.width * 0.35, player.height * 0.28, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Head
-                ctx.beginPath();
-                ctx.arc(centerX + 25, player.y + danceOffset + 40, 30, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Mane
-                ctx.fillStyle = player.maskColor;
-                for (let i = 0; i < 12; i++) {
-                    const angle = (i / 12) * Math.PI * 2;
-                    const spikeX = centerX + 25 + Math.cos(angle) * 35;
-                    const spikeY = player.y + danceOffset + 40 + Math.sin(angle) * 35;
-                    ctx.beginPath();
-                    ctx.moveTo(centerX + 25, player.y + danceOffset + 40);
-                    ctx.lineTo(spikeX, spikeY);
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
+        // Update dance animation
+        player.danceStep++;
+        
+        // Update power-ups
+        updatePowerUps();
+        
+        // Update background
+        backgroundDancers.forEach(dancer => {
+            dancer.x += dancer.speed * deltaTime;
+            dancer.danceStep += 0.5 * deltaTime;
+            if (dancer.x > canvas.width + 100) dancer.x = -100;
+        });
+        
+        backgroundElements.forEach(elem => {
+            elem.x -= elem.speed * (gameSpeed / 5) * deltaTime;
+            if (elem.x < -elem.width) {
+                elem.x = canvas.width + Math.random() * 100;
+                if (elem.type === 'grass') {
+                    elem.height = 20 + Math.random() * 40;
                 }
             }
+        });
+        
+        // Spawn obstacles (less frequent on mobile)
+        const currentTime = Date.now();
+        if (currentTime - lastObstacleTime > minObstacleInterval && Math.random() < 0.005) {
+            const type = Math.random() > 0.5 ? 'low' : 'high';
+            const obstacle = {
+                id: Date.now(),
+                x: canvas.width,
+                y: type === 'low' ? groundY - 35 : groundY - 85,
+                width: type === 'low' ? 60 : 40,
+                height: type === 'low' ? 35 : 85,
+                color: type === 'low' ? '#8B4513' : '#C60C30',
+                highlight: type === 'low' ? '#D2691E' : '#FF4500',
+                type: type,
+                name: type === 'low' ? 'Log' : 'Pole'
+            };
             
-            // Draw mask (common for all characters)
-            ctx.fillStyle = player.maskColor;
-            ctx.beginPath();
-            ctx.arc(centerX, player.y + danceOffset + 40, 20, 0, Math.PI * 2);
-            ctx.fill();
+            obstacles.push(obstacle);
+            lastObstacleTime = currentTime;
             
-            // Eye holes
-            ctx.fillStyle = '#000000';
-            ctx.beginPath();
-            ctx.arc(centerX - 8, player.y + danceOffset + 38, 4, 0, Math.PI * 2);
-            ctx.arc(centerX + 8, player.y + danceOffset + 38, 4, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Draw trail for double jump indicator
-            if (canDoubleJump && !player.isJumping && characters[player.character].doubleJump) {
-                ctx.strokeStyle = 'rgba(247, 233, 103, 0.5)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
+            // Warning indicator
+            warningIndicators.push({
+                x: obstacle.x + obstacle.width / 2,
+                y: type === 'low' ? obstacle.y - 40 : obstacle.y + obstacle.height + 40,
+                obstacleId: obstacle.id,
+                type: type === 'low' ? 'above' : 'below'
+            });
         }
         
-        // Enhanced input handling with debouncing and double jump
-        let jumpDebounce = false;
-        let duckDebounce = false;
+        // Spawn utsi particles
+        if (Math.random() < 0.004 && utsiParticles.length < 2) {
+            utsiParticles.push({
+                x: canvas.width,
+                y: groundY - 40 - Math.random() * 100,
+                radius: 10,
+                color: '#F0F3F5',
+                collected: false,
+                glow: 0,
+                magneticPull: 0
+            });
+        }
         
-        function handleJump() {
-            if (currentState !== GameState.PLAYING) return;
+        // Spawn power-ups (rare)
+        if (Math.random() < 0.001 && powerUps.length < 1) {
+            const powerUpTypes = [PowerUp.MAGNETIC, PowerUp.SHIELD];
+            const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+            const colors = {
+                [PowerUp.MAGNETIC]: '#4A90E2',
+                [PowerUp.SHIELD]: '#339E35'
+            };
             
-            const now = Date.now();
+            powerUps.push({
+                x: canvas.width,
+                y: groundY - 60 - Math.random() * 80,
+                radius: 12,
+                color: colors[type],
+                type: type,
+                collected: false,
+                symbol: type === PowerUp.MAGNETIC ? 'M' : 'S'
+            });
+        }
+        
+        // Update obstacles
+        obstacles.forEach((obstacle, index) => {
+            obstacle.x -= gameSpeed * characters[player.character].speed * deltaTime;
             
-            // Double jump check (within 300ms and character has double jump ability)
-            if (player.isJumping && characters[player.character].doubleJump && 
-                now - lastJumpTime < 300 && canDoubleJump) {
-                // Double jump!
-                player.velocityY = -characters[player.character].jumpHeight * 0.8;
-                canDoubleJump = false;
+            // Update warning indicator
+            const indicator = warningIndicators.find(ind => ind.obstacleId === obstacle.id);
+            if (indicator) indicator.x = obstacle.x + obstacle.width / 2;
+            
+            // Collision detection
+            const playerBottom = player.y + player.height;
+            const playerRight = player.x + player.width;
+            const obstacleBottom = obstacle.y + obstacle.height;
+            const obstacleRight = obstacle.x + obstacle.width;
+            
+            if (player.x < obstacleRight &&
+                playerRight > obstacle.x &&
+                player.y < obstacleBottom &&
+                playerBottom > obstacle.y) {
                 
-                // Double jump particles
-                for (let i = 0; i < 10; i++) {
-                    particles.push({
-                        x: player.x + player.width / 2,
-                        y: player.y + player.height,
-                        radius: 3 + Math.random() * 4,
-                        color: '#F7E967',
-                        life: 20 + Math.random() * 20,
-                        maxLife: 20 + Math.random() * 20,
-                        vx: -2 + Math.random() * 4,
-                        vy: -3 - Math.random() * 3
-                    });
-                }
-                
-                lastJumpTime = now;
-                return;
-            }
-            
-            // Normal jump
-            if (player.isJumping || player.isDucking || jumpDebounce) return;
-            
-            jumpDebounce = true;
-            player.isJumping = true;
-            player.velocityY = -characters[player.character].jumpHeight;
-            lastJumpTime = now;
-            canDoubleJump = true;
-            
-            // Visual feedback
-            if (isMobile) {
-                document.querySelector('.control-btn.jump').style.transform = 'scale(0.9)';
-                setTimeout(() => {
-                    document.querySelector('.control-btn.jump').style.transform = 'scale(1)';
-                }, 100);
-            }
-            
-            // Jump particles
-            for (let i = 0; i < 6; i++) {
-                particles.push({
-                    x: player.x + player.width / 2,
-                    y: player.y + player.height,
-                    radius: 2 + Math.random() * 3,
-                    color: '#F7E967',
-                    life: 15 + Math.random() * 15,
-                    maxLife: 15 + Math.random() * 15,
-                    vx: -1 + Math.random() * 2,
-                    vy: -2 - Math.random() * 2
-                });
-            }
-            
-            setTimeout(() => { jumpDebounce = false; }, 100);
-        }
-        
-        function handleDuck() {
-            if (player.isDucking || player.isJumping || duckDebounce || currentState !== GameState.PLAYING) return;
-            
-            duckDebounce = true;
-            player.isDucking = true;
-            player.duckTimer = characters[player.character].duckDuration;
-            player.height = characters[player.character].height * 0.6;
-            
-            // Visual feedback
-            if (isMobile) {
-                document.querySelector('.control-btn.duck').style.transform = 'scale(0.9)';
-                setTimeout(() => {
-                    document.querySelector('.control-btn.duck').style.transform = 'scale(1)';
-                }, 100);
-            }
-            
-            setTimeout(() => { duckDebounce = false; }, 100);
-        }
-        
-        // Power-up system
-        function activatePowerUp(type) {
-            activePowerUp = type;
-            powerUpTimer = powerUpDuration;
-            powerupsUsed++;
-            
-            switch(type) {
-                case PowerUp.MAGNETIC:
-                    powerupDisplay.style.display = 'flex';
-                    magneticEffect.className = 'powerup-effect magnetic-effect';
-                    magneticEffect.style.opacity = '1';
-                    break;
-                    
-                case PowerUp.SHIELD:
-                    player.hasShield = true;
-                    shieldEffect.className = 'powerup-effect shield-effect';
-                    shieldEffect.style.opacity = '1';
-                    break;
-                    
-                case PowerUp.SPEED:
-                    gameSpeed += 2.0;
-                    break;
-            }
-            
-            // Power-up particles
-            for (let i = 0; i < 15; i++) {
-                particles.push({
-                    x: player.x + player.width / 2,
-                    y: player.y + player.height / 2,
-                    radius: 4 + Math.random() * 4,
-                    color: '#FFD700',
-                    life: 30 + Math.random() * 30,
-                    maxLife: 30 + Math.random() * 30,
-                    vx: -3 + Math.random() * 6,
-                    vy: -3 + Math.random() * 6
-                });
-            }
-        }
-        
-        function updatePowerUps() {
-            if (activePowerUp !== PowerUp.NONE) {
-                powerUpTimer--;
-                magneticTimer.textContent = Math.ceil(powerUpTimer / 60);
-                
-                if (powerUpTimer <= 0) {
-                    deactivatePowerUp();
-                }
-            }
-        }
-        
-        function deactivatePowerUp() {
-            switch(activePowerUp) {
-                case PowerUp.MAGNETIC:
-                    magneticEffect.style.opacity = '0';
-                    break;
-                case PowerUp.SHIELD:
+                // Shield protection
+                if (player.hasShield) {
                     player.hasShield = false;
                     shieldEffect.style.opacity = '0';
-                    break;
-                case PowerUp.SPEED:
-                    gameSpeed -= 2.0;
-                    break;
-            }
-            
-            activePowerUp = PowerUp.NONE;
-            powerupDisplay.style.display = 'none';
-        }
-        
-        function transformCharacter() {
-            currentState = GameState.TRANSFORMING;
-            transformationCount++;
-            
-            const transformationSequence = ['MWANA', 'NJOBVU', 'KAMBIYA', 'MKANGO'];
-            const currentIndex = transformationSequence.indexOf(player.character);
-            const nextIndex = (currentIndex + 1) % transformationSequence.length;
-            const nextChar = transformationSequence[nextIndex];
-            
-            // Show transformation effect
-            transformationOverlay.style.animation = 'none';
-            void transformationOverlay.offsetWidth;
-            transformationOverlay.style.animation = 'transformFlash 1s ease-out';
-            
-            // Update player
-            player.character = nextChar;
-            player.color = characters[nextChar].color;
-            player.maskColor = characters[nextChar].maskColor;
-            player.width = characters[nextChar].width;
-            player.height = characters[nextChar].height;
-            player.isDucking = false;
-            player.duckTimer = 0;
-            
-            // Update UI
-            currentChar.textContent = characters[nextChar].name;
-            charType.textContent = characters[nextChar].type;
-            
-            // Increase required utsi with diminishing returns
-            utsiRequired = Math.floor(utsiRequired * 1.5);
-            utsi = 0;
-            
-            // Transformation particles
-            for (let i = 0; i < 25; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = 3 + Math.random() * 4;
-                particles.push({
-                    x: player.x + player.width / 2,
-                    y: player.y + player.height / 2,
-                    radius: 4 + Math.random() * 5,
-                    color: player.color,
-                    life: 30 + Math.random() * 30,
-                    maxLife: 30 + Math.random() * 30,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed
-                });
-            }
-            
-            // Return to playing state
-            setTimeout(() => {
-                currentState = GameState.PLAYING;
-            }, 1000);
-            
-            updateCharacterUI();
-        }
-        
-        function updateCharacterUI() {
-            scoreValue.textContent = score;
-            utsiValue.textContent = utsi;
-            utsiRequiredEl.textContent = utsiRequired;
-            highScoreValue.textContent = highScore;
-        }
-        
-        // Enhanced game loop
-        function gameLoop() {
-            if (currentState !== GameState.PLAYING && currentState !== GameState.TRANSFORMING) return;
-            
-            update();
-            render();
-            
-            requestAnimationFrame(gameLoop);
-        }
-        
-        function update() {
-            rhythmTimer++;
-            
-            // Update player
-            player.y += player.velocityY;
-            player.velocityY += 0.6; // Reduced gravity
-            
-            // Ground collision
-            const groundLevel = groundY - player.height;
-            if (player.y > groundLevel) {
-                player.y = groundLevel;
-                player.velocityY = 0;
-                player.isJumping = false;
-                player.lastGroundY = player.y;
-                canDoubleJump = characters[player.character].doubleJump;
-            }
-            
-            // Update duck timer
-            if (player.isDucking) {
-                player.duckTimer--;
-                if (player.duckTimer <= 0) {
-                    player.isDucking = false;
-                    player.height = characters[player.character].height;
-                }
-            }
-            
-            // Update dance animation
-            player.danceStep++;
-            
-            // Update power-ups
-            updatePowerUps();
-            
-            // Update background
-            backgroundDancers.forEach(dancer => {
-                dancer.x += dancer.speed;
-                dancer.danceStep += 0.5;
-                if (dancer.x > canvas.width + 100) dancer.x = -100;
-            });
-            
-            backgroundElements.forEach(elem => {
-                elem.x -= elem.speed * (gameSpeed / 5);
-                if (elem.x < -elem.width) {
-                    elem.x = canvas.width + Math.random() * 100;
-                    if (elem.type === 'grass') {
-                        elem.height = 20 + Math.random() * 40;
-                    }
-                }
-            });
-            
-            // Spawn obstacles
-            const currentTime = Date.now();
-            if (currentTime - lastObstacleTime > minObstacleInterval && Math.random() < 0.007) {
-                const type = Math.random() > 0.5 ? 'low' : 'high';
-                const obstacle = {
-                    id: Date.now(),
-                    x: canvas.width,
-                    y: type === 'low' ? groundY - 35 : groundY - 85,
-                    width: type === 'low' ? 60 : 40,
-                    height: type === 'low' ? 35 : 85,
-                    color: type === 'low' ? '#8B4513' : '#C60C30',
-                    highlight: type === 'low' ? '#D2691E' : '#FF4500',
-                    type: type,
-                    name: type === 'low' ? 'Fallen Log' : 'Spirit Pole'
-                };
-                
-                obstacles.push(obstacle);
-                lastObstacleTime = currentTime;
-                
-                // Warning indicator
-                warningIndicators.push({
-                    x: obstacle.x + obstacle.width / 2,
-                    y: type === 'low' ? obstacle.y - 40 : obstacle.y + obstacle.height + 40,
-                    obstacleId: obstacle.id,
-                    type: type === 'low' ? 'above' : 'below'
-                });
-            }
-            
-            // Spawn utsi particles
-            if (Math.random() < 0.005 && utsiParticles.length < 3) {
-                utsiParticles.push({
-                    x: canvas.width,
-                    y: groundY - 40 - Math.random() * 120,
-                    radius: 12,
-                    color: '#F0F3F5',
-                    collected: false,
-                    glow: 0,
-                    magneticPull: 0
-                });
-            }
-            
-            // Spawn power-ups (rare)
-            if (Math.random() < 0.0015 && powerUps.length < 1) {
-                const powerUpTypes = [PowerUp.MAGNETIC, PowerUp.SHIELD, PowerUp.SPEED];
-                const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
-                const colors = {
-                    [PowerUp.MAGNETIC]: '#4A90E2',
-                    [PowerUp.SHIELD]: '#339E35',
-                    [PowerUp.SPEED]: '#C60C30'
-                };
-                
-                powerUps.push({
-                    x: canvas.width,
-                    y: groundY - 60 - Math.random() * 80,
-                    radius: 15,
-                    color: colors[type],
-                    type: type,
-                    collected: false,
-                    symbol: type === PowerUp.MAGNETIC ? 'M' : (type === PowerUp.SHIELD ? 'S' : 'F')
-                });
-            }
-            
-            // Update obstacles
-            obstacles.forEach((obstacle, index) => {
-                obstacle.x -= gameSpeed * characters[player.character].speed;
-                
-                // Update warning indicator
-                const indicator = warningIndicators.find(ind => ind.obstacleId === obstacle.id);
-                if (indicator) indicator.x = obstacle.x + obstacle.width / 2;
-                
-                // Collision detection
-                const playerBottom = player.y + player.height;
-                const playerRight = player.x + player.width;
-                const obstacleBottom = obstacle.y + obstacle.height;
-                const obstacleRight = obstacle.x + obstacle.width;
-                
-                if (player.x < obstacleRight &&
-                    playerRight > obstacle.x &&
-                    player.y < obstacleBottom &&
-                    playerBottom > obstacle.y) {
-                    
-                    // Shield protection
-                    if (player.hasShield) {
-                        player.hasShield = false;
-                        shieldEffect.style.opacity = '0';
-                        obstacles.splice(index, 1);
-                        warningIndicators = warningIndicators.filter(ind => ind.obstacleId !== obstacle.id);
-                        
-                        // Shield break particles
-                        for (let i = 0; i < 12; i++) {
-                            particles.push({
-                                x: obstacle.x + obstacle.width / 2,
-                                y: obstacle.y + obstacle.height / 2,
-                                radius: 3 + Math.random() * 4,
-                                color: '#339E35',
-                                life: 20 + Math.random() * 20,
-                                maxLife: 20 + Math.random() * 20,
-                                vx: -4 + Math.random() * 8,
-                                vy: -4 + Math.random() * 8
-                            });
-                        }
-                        return;
-                    }
-                    
-                    // Check for correct action
-                    if (obstacle.type === 'low' && player.isJumping && player.velocityY < 0) {
-                        // Successful jump
-                        score += 50;
-                        obstaclesPassed++;
-                        obstacles.splice(index, 1);
-                        warningIndicators = warningIndicators.filter(ind => ind.obstacleId !== obstacle.id);
-                        
-                        // Success particles
-                        for (let i = 0; i < 10; i++) {
-                            particles.push({
-                                x: obstacle.x + obstacle.width / 2,
-                                y: obstacle.y + obstacle.height / 2,
-                                radius: 2 + Math.random() * 3,
-                                color: '#F7E967',
-                                life: 15 + Math.random() * 15,
-                                maxLife: 15 + Math.random() * 15,
-                                vx: -3 + Math.random() * 6,
-                                vy: -3 + Math.random() * 6
-                            });
-                        }
-                    } else if (obstacle.type === 'high' && player.isDucking) {
-                        // Successful duck
-                        score += 50;
-                        obstaclesPassed++;
-                        obstacles.splice(index, 1);
-                        warningIndicators = warningIndicators.filter(ind => ind.obstacleId !== obstacle.id);
-                        
-                        // Success particles
-                        for (let i = 0; i < 10; i++) {
-                            particles.push({
-                                x: obstacle.x + obstacle.width / 2,
-                                y: obstacle.y + obstacle.height / 2,
-                                radius: 2 + Math.random() * 3,
-                                color: '#F7E967',
-                                life: 15 + Math.random() * 15,
-                                maxLife: 15 + Math.random() * 15,
-                                vx: -3 + Math.random() * 6,
-                                vy: -1 + Math.random() * 2
-                            });
-                        }
-                    } else {
-                        // Game over
-                        gameOver();
-                        return;
-                    }
-                }
-                
-                // Remove off-screen obstacles
-                if (obstacle.x < -obstacle.width) {
                     obstacles.splice(index, 1);
                     warningIndicators = warningIndicators.filter(ind => ind.obstacleId !== obstacle.id);
-                    score += 5;
+                    return;
                 }
-            });
+                
+                // Check for correct action
+                if ((obstacle.type === 'low' && player.isJumping && player.velocityY < 0) ||
+                    (obstacle.type === 'high' && player.isDucking)) {
+                    // Success
+                    score += 40;
+                    obstaclesPassed++;
+                    obstacles.splice(index, 1);
+                    warningIndicators = warningIndicators.filter(ind => ind.obstacleId !== obstacle.id);
+                } else {
+                    // Game over
+                    gameOver();
+                    return;
+                }
+            }
             
-            // Update utsi particles with magnetic attraction
-            utsiParticles.forEach((particle, index) => {
-                particle.x -= gameSpeed * characters[player.character].speed;
-                particle.glow = (particle.glow + 0.1) % (Math.PI * 2);
-                
-                // Magnetic attraction
-                if (activePowerUp === PowerUp.MAGNETIC) {
-                    const dx = (player.x + player.width / 2) - particle.x;
-                    const dy = (player.y + player.height / 2) - particle.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < 300) {
-                        particle.magneticPull = Math.min(particle.magneticPull + 0.05, 1);
-                        const pullStrength = 0.2 * particle.magneticPull;
-                        particle.x += dx * pullStrength;
-                        particle.y += dy * pullStrength;
-                    }
-                }
-                
-                // Collection detection
-                if (!particle.collected) {
-                    const playerCenterX = player.x + player.width / 2;
-                    const playerCenterY = player.y + player.height / 2;
-                    const distance = Math.sqrt(
-                        (particle.x - playerCenterX) ** 2 + 
-                        (particle.y - playerCenterY) ** 2
-                    );
-                    
-                    if (distance < particle.radius + Math.max(player.width, player.height) / 3) {
-                        particle.collected = true;
-                        utsi++;
-                        utsiCollectedTotal++;
-                        
-                        // Collection particles
-                        for (let i = 0; i < 12; i++) {
-                            particles.push({
-                                x: particle.x,
-                                y: particle.y,
-                                radius: 2 + Math.random() * 3,
-                                color: particle.color,
-                                life: 12 + Math.random() * 12,
-                                maxLife: 12 + Math.random() * 12,
-                                vx: -2 + Math.random() * 4,
-                                vy: -2 + Math.random() * 4
-                            });
-                        }
-                        
-                        if (utsi >= utsiRequired) {
-                            transformCharacter();
-                        }
-                        
-                        updateCharacterUI();
-                    }
-                }
-                
-                // Remove if off screen or collected
-                if (particle.x < -particle.radius || particle.collected) {
-                    utsiParticles.splice(index, 1);
-                }
-            });
+            // Remove off-screen obstacles
+            if (obstacle.x < -obstacle.width) {
+                obstacles.splice(index, 1);
+                warningIndicators = warningIndicators.filter(ind => ind.obstacleId !== obstacle.id);
+                score += 3;
+            }
+        });
+        
+        // Update utsi particles
+        utsiParticles.forEach((particle, index) => {
+            particle.x -= gameSpeed * characters[player.character].speed * deltaTime;
+            particle.glow = (particle.glow + 0.1) % (Math.PI * 2);
             
-            // Update power-ups
-            powerUps.forEach((powerUp, index) => {
-                powerUp.x -= gameSpeed * characters[player.character].speed;
+            // Magnetic attraction
+            if (activePowerUp === PowerUp.MAGNETIC) {
+                const dx = (player.x + player.width / 2) - particle.x;
+                const dy = (player.y + player.height / 2) - particle.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // Collection detection
-                if (!powerUp.collected) {
-                    const playerCenterX = player.x + player.width / 2;
-                    const playerCenterY = player.y + player.height / 2;
-                    const distance = Math.sqrt(
-                        (powerUp.x - playerCenterX) ** 2 + 
-                        (powerUp.y - playerCenterY) ** 2
-                    );
-                    
-                    if (distance < powerUp.radius + Math.max(player.width, player.height) / 3) {
-                        powerUp.collected = true;
-                        activatePowerUp(powerUp.type);
-                        powerUps.splice(index, 1);
-                    }
+                if (distance < 250) {
+                    particle.magneticPull = Math.min(particle.magneticPull + 0.05, 1);
+                    const pullStrength = 0.15 * particle.magneticPull;
+                    particle.x += dx * pullStrength * deltaTime;
+                    particle.y += dy * pullStrength * deltaTime;
                 }
+            }
+            
+            // Collection detection
+            if (!particle.collected) {
+                const playerCenterX = player.x + player.width / 2;
+                const playerCenterY = player.y + player.height / 2;
+                const distance = Math.sqrt(
+                    (particle.x - playerCenterX) ** 2 + 
+                    (particle.y - playerCenterY) ** 2
+                );
                 
-                // Remove if off screen
-                if (powerUp.x < -powerUp.radius) {
+                if (distance < particle.radius + Math.max(player.width, player.height) / 3) {
+                    particle.collected = true;
+                    utsi++;
+                    utsiCollectedTotal++;
+                    
+                    if (utsi >= utsiRequired) {
+                        transformCharacter();
+                    }
+                    
+                    updateCharacterUI();
+                }
+            }
+            
+            // Remove if off screen or collected
+            if (particle.x < -particle.radius || particle.collected) {
+                utsiParticles.splice(index, 1);
+            }
+        });
+        
+        // Update power-ups
+        powerUps.forEach((powerUp, index) => {
+            powerUp.x -= gameSpeed * characters[player.character].speed * deltaTime;
+            
+            // Collection detection
+            if (!powerUp.collected) {
+                const playerCenterX = player.x + player.width / 2;
+                const playerCenterY = player.y + player.height / 2;
+                const distance = Math.sqrt(
+                    (powerUp.x - playerCenterX) ** 2 + 
+                    (powerUp.y - playerCenterY) ** 2
+                );
+                
+                if (distance < powerUp.radius + Math.max(player.width, player.height) / 3) {
+                    powerUp.collected = true;
+                    activatePowerUp(powerUp.type);
                     powerUps.splice(index, 1);
                 }
-            });
-            
-            // Update particles
-            particles.forEach((particle, index) => {
-                if (particle.symbol) {
-                    particle.x += particle.vx || 0;
-                    particle.y += particle.vy || 0;
-                    particle.life--;
-                } else {
-                    particle.x += particle.vx || 0;
-                    particle.y += particle.vy || 0;
-                    particle.life--;
-                }
-                
-                if (particle.life <= 0) {
-                    particles.splice(index, 1);
-                }
-            });
-            
-            // Slowly increase game speed
-            if (Math.random() < 0.0005) {
-                gameSpeed += 0.01;
-                minObstacleInterval = Math.max(1200, minObstacleInterval - 1);
             }
             
-            // Update score
-            score += Math.floor(gameSpeed / 2);
-            updateCharacterUI();
+            // Remove if off screen
+            if (powerUp.x < -powerUp.radius) {
+                powerUps.splice(index, 1);
+            }
+        });
+        
+        // Update particles (limit for performance)
+        if (particles.length > 50) {
+            particles = particles.slice(-50);
         }
         
-        // Enhanced rendering
-        function render() {
-            ctx.fillStyle = '#0A0E14';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        particles.forEach((particle, index) => {
+            if (particle.vx) particle.x += particle.vx * deltaTime;
+            if (particle.vy) particle.y += particle.vy * deltaTime;
+            particle.life--;
             
-            // Draw stars
-            for (let i = 0; i < 50; i++) {
-                const starX = (i * 23) % canvas.width;
-                const starY = (i * 17) % (canvas.height * 0.6);
-                const twinkle = Math.sin(rhythmTimer * 0.05 + i) * 0.5 + 0.5;
-                ctx.fillStyle = `rgba(255, 255, 255, ${0.2 + twinkle * 0.3})`;
-                ctx.fillRect(starX, starY, 1, 1);
+            if (particle.life <= 0) {
+                particles.splice(index, 1);
             }
-            
-            // Draw background
-            backgroundElements.forEach(elem => {
+        });
+        
+        // Slowly increase game speed
+        if (Math.random() < 0.0003) {
+            gameSpeed += 0.008;
+            minObstacleInterval = Math.max(1400, minObstacleInterval - 0.5);
+        }
+        
+        // Update score
+        score += Math.floor(gameSpeed / 2) * deltaTime;
+        updateCharacterUI();
+    }
+    
+    // OPTIMIZED rendering for mobile
+    function render() {
+        // Clear canvas efficiently
+        ctx.fillStyle = '#0A0E14';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw simple stars (reduced count for mobile)
+        for (let i = 0; i < 20; i++) {
+            const starX = (i * 37) % canvas.width;
+            const starY = (i * 29) % (groundY * 0.6);
+            const twinkle = Math.sin(rhythmTimer * 0.05 + i) * 0.5 + 0.5;
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.2 + twinkle * 0.2})`;
+            ctx.fillRect(starX, starY, 1, 1);
+        }
+        
+        // Draw background mountains
+        backgroundElements.forEach(elem => {
+            if (elem.type === 'mountain') {
                 ctx.fillStyle = elem.color;
-                if (elem.type === 'mountain') {
-                    ctx.beginPath();
-                    ctx.moveTo(elem.x, elem.y);
-                    ctx.lineTo(elem.x + elem.width * 0.3, elem.y - elem.height);
-                    ctx.lineTo(elem.x + elem.width * 0.7, elem.y - elem.height * 0.8);
-                    ctx.lineTo(elem.x + elem.width, elem.y);
-                    ctx.closePath();
-                    ctx.fill();
-                } else if (elem.type === 'tree') {
-                    ctx.fillRect(elem.x, elem.y, elem.width, elem.height);
-                    ctx.fillStyle = '#0F4A15';
-                    ctx.fillRect(elem.x - 10, elem.y, elem.width + 20, 10);
-                } else {
-                    ctx.fillRect(elem.x, groundY - elem.height, elem.width, elem.height);
-                }
-            });
-            
-            // Draw ground
-            ctx.fillStyle = '#3E2723';
-            ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
-            
-            // Draw ground pattern
-            ctx.fillStyle = '#2C1E16';
-            for (let i = 0; i < 20; i++) {
-                const x = (i * 40) % canvas.width;
-                ctx.fillRect(x, groundY, 20, 5);
+                ctx.beginPath();
+                ctx.moveTo(elem.x, elem.y);
+                ctx.lineTo(elem.x + elem.width * 0.3, elem.y - elem.height);
+                ctx.lineTo(elem.x + elem.width * 0.7, elem.y - elem.height * 0.8);
+                ctx.lineTo(elem.x + elem.width, elem.y);
+                ctx.closePath();
+                ctx.fill();
             }
+        });
+        
+        // Draw ground
+        ctx.fillStyle = '#3E2723';
+        ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+        
+        // Draw grass
+        backgroundElements.forEach(elem => {
+            if (elem.type === 'grass') {
+                ctx.fillStyle = elem.color;
+                ctx.fillRect(elem.x, groundY - elem.height, elem.width, elem.height);
+            }
+        });
+        
+        // Draw background dancers
+        backgroundDancers.forEach(dancer => {
+            const danceOffset = Math.sin(dancer.danceStep * 0.1) * 8;
+            ctx.fillStyle = '#5D4037';
+            ctx.fillRect(dancer.x, dancer.y + danceOffset, dancer.width, dancer.height);
+        });
+        
+        // Draw warning indicators
+        warningIndicators.forEach(indicator => {
+            const pulse = Math.sin(Date.now() * 0.01) * 0.3 + 0.7;
+            ctx.fillStyle = `rgba(198, 12, 48, ${pulse})`;
+            ctx.beginPath();
+            ctx.arc(indicator.x, indicator.y, 15, 0, Math.PI * 2);
+            ctx.fill();
             
-            // Draw background dancers
-            backgroundDancers.forEach(dancer => {
-                const danceOffset = Math.sin(dancer.danceStep * 0.1) * 10;
-                ctx.fillStyle = '#5D4037';
-                ctx.fillRect(dancer.x, dancer.y + danceOffset, dancer.width, dancer.height);
-                
-                ctx.fillStyle = '#3E2723';
-                ctx.beginPath();
-                ctx.arc(dancer.x + dancer.width/2, dancer.y + danceOffset + 30, 20, 0, Math.PI * 2);
-                ctx.fill();
-            });
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 14px Poppins';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(indicator.type === 'above' ? '↑' : '↓', indicator.x, indicator.y);
+        });
+        
+        // Draw obstacles
+        obstacles.forEach(obstacle => {
+            ctx.fillStyle = obstacle.color;
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
             
-            // Draw warning indicators
-            warningIndicators.forEach(indicator => {
-                const pulse = Math.sin(Date.now() * 0.01) * 0.3 + 0.7;
-                ctx.fillStyle = `rgba(198, 12, 48, ${pulse})`;
-                ctx.beginPath();
-                ctx.arc(indicator.x, indicator.y, 18, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.fillStyle = '#FFFFFF';
-                ctx.font = 'bold 16px Poppins';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(indicator.type === 'above' ? '↑ JUMP' : '↓ DUCK', indicator.x, indicator.y);
-                
-                ctx.strokeStyle = `rgba(255, 0, 0, ${pulse * 0.4})`;
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(indicator.x, indicator.y, 22, 0, Math.PI * 2);
-                ctx.stroke();
-            });
+            ctx.fillStyle = obstacle.highlight;
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, 5);
             
-            // Draw obstacles
-            obstacles.forEach(obstacle => {
-                ctx.fillStyle = obstacle.color;
-                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-                
-                ctx.fillStyle = obstacle.highlight;
-                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, 6);
-                ctx.fillRect(obstacle.x, obstacle.y, 6, obstacle.height);
-                
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-                if (obstacle.type === 'low') {
-                    for (let i = 0; i < 3; i++) {
-                        ctx.fillRect(obstacle.x + 10, obstacle.y + 10 + i * 10, obstacle.width - 20, 3);
-                    }
-                } else {
-                    for (let i = 0; i < 3; i++) {
-                        ctx.fillRect(obstacle.x + 15 + i * 10, obstacle.y + 10, 3, obstacle.height - 20);
-                    }
-                }
-                
-                ctx.strokeStyle = obstacle.highlight;
-                ctx.lineWidth = 3;
-                ctx.strokeRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-                
-                ctx.fillStyle = '#F0F3F5';
-                ctx.font = 'bold 12px Poppins';
-                ctx.textAlign = 'center';
-                ctx.fillText(obstacle.name, obstacle.x + obstacle.width/2, obstacle.y - 8);
-            });
+            // Simple label
+            ctx.fillStyle = '#F0F3F5';
+            ctx.font = 'bold 10px Poppins';
+            ctx.textAlign = 'center';
+            ctx.fillText(obstacle.name, obstacle.x + obstacle.width/2, obstacle.y - 5);
+        });
+        
+        // Draw utsi particles
+        utsiParticles.forEach(particle => {
+            const glowSize = 4 + Math.sin(particle.glow) * 3;
             
-            // Draw utsi particles
-            utsiParticles.forEach(particle => {
-                const glowSize = 6 + Math.sin(particle.glow) * 4;
-                
-                ctx.fillStyle = `rgba(240, 243, 245, 0.2)`;
-                ctx.beginPath();
-                ctx.arc(particle.x, particle.y, particle.radius + glowSize, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.fillStyle = particle.color;
+            ctx.fillStyle = `rgba(240, 243, 245, 0.15)`;
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.radius + glowSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = particle.color;
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        
+        // Draw power-ups
+        powerUps.forEach(powerUp => {
+            const pulse = Math.sin(Date.now() * 0.005) * 0.5 + 0.5;
+            
+            ctx.fillStyle = powerUp.color;
+            ctx.beginPath();
+            ctx.arc(powerUp.x, powerUp.y, powerUp.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 12px Poppins';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(powerUp.symbol, powerUp.x, powerUp.y);
+        });
+        
+        // Draw particles
+        particles.forEach(particle => {
+            const alpha = particle.life / particle.maxLife;
+            ctx.fillStyle = particle.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
+            if (particle.radius) {
                 ctx.beginPath();
                 ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
                 ctx.fill();
-                
-                ctx.fillStyle = '#FFFFFF';
-                ctx.font = 'bold 10px Poppins';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('UTSI', particle.x, particle.y);
-            });
-            
-            // Draw power-ups
-            powerUps.forEach(powerUp => {
-                const pulse = Math.sin(Date.now() * 0.005) * 0.5 + 0.5;
-                
-                // Glow
-                ctx.fillStyle = `rgba(255, 215, 0, ${pulse * 0.3})`;
-                ctx.beginPath();
-                ctx.arc(powerUp.x, powerUp.y, powerUp.radius + 8, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Main circle
-                ctx.fillStyle = powerUp.color;
-                ctx.beginPath();
-                ctx.arc(powerUp.x, powerUp.y, powerUp.radius, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Symbol
-                ctx.fillStyle = '#FFFFFF';
-                ctx.font = 'bold 14px Poppins';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(powerUp.symbol, powerUp.x, powerUp.y);
-                
-                // Outer ring
-                ctx.strokeStyle = '#FFD700';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(powerUp.x, powerUp.y, powerUp.radius + 4, 0, Math.PI * 2);
-                ctx.stroke();
-            });
-            
-            // Draw particles
-            particles.forEach(particle => {
-                if (particle.symbol) {
-                    const alpha = particle.life / particle.maxLife;
-                    ctx.fillStyle = `rgba(51, 158, 53, ${alpha})`;
-                    ctx.font = '24px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(particle.symbol, particle.x, particle.y);
-                } else {
-                    const alpha = particle.life / particle.maxLife;
-                    ctx.fillStyle = particle.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
-                    ctx.beginPath();
-                    ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            });
-            
-            // Draw player
-            drawPlayer();
-            
-            // Draw border
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, 3);
-            ctx.fillRect(0, canvas.height - 3, canvas.width, 3);
-            ctx.fillStyle = '#C60C30';
-            ctx.fillRect(0, 3, canvas.width, 2);
-            ctx.fillRect(0, canvas.height - 5, canvas.width, 2);
-            ctx.fillStyle = '#339E35';
-            ctx.fillRect(0, 5, canvas.width, 1);
-            ctx.fillRect(0, canvas.height - 1, canvas.width, 1);
+            }
+        });
+        
+        // Draw player
+        drawPlayer();
+    }
+    
+    function gameOver() {
+        currentState = GameState.GAME_OVER;
+        
+        const isNewHighScore = saveHighScore();
+        
+        // Update game over screen
+        finalScore.textContent = Math.floor(score);
+        finalHighScore.textContent = highScore;
+        spiritsCount.textContent = transformationCount;
+        breakdownTransformations.textContent = transformationCount;
+        breakdownObstacles.textContent = obstaclesPassed;
+        breakdownUtsi.textContent = utsiCollectedTotal;
+        breakdownPowerups.textContent = powerupsUsed;
+        
+        // Game over message
+        let message = "";
+        if (isNewHighScore) {
+            message = "NEW HIGH SCORE!<br>The spirits celebrate your dance!";
+        } else if (transformationCount >= 2) {
+            message = "You danced with the spirits!<br>The forest honors you.";
+        } else if (transformationCount >= 1) {
+            message = "You embraced the spirit's form.<br>The dance lives within you.";
+        } else {
+            message = "You danced as human.<br>The spirits welcome your first steps.";
+        }
+        finalMessage.innerHTML = message;
+        
+        gameOverScreen.style.display = 'flex';
+        if (isMobile) mobileControls.style.display = 'none';
+        rhythmPulse.style.display = 'none';
+        
+        // Cancel animation frame
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
         }
         
-        function gameOver() {
-            currentState = GameState.GAME_OVER;
-            
-            const isNewHighScore = saveHighScore();
-            
-            // Update game over screen
-            finalScore.textContent = score;
-            finalHighScore.textContent = highScore;
-            spiritsCount.textContent = transformationCount;
-            breakdownTransformations.textContent = transformationCount;
-            breakdownObstacles.textContent = obstaclesPassed;
-            breakdownUtsi.textContent = utsiCollectedTotal;
-            breakdownPowerups.textContent = powerupsUsed;
-            
-            // Game over message
-            let message = "";
-            if (isNewHighScore) {
-                message = "NEW HIGH SCORE!<br>The spirits celebrate your dance!";
-            } else if (transformationCount >= 3) {
-                message = "You danced with many spirits!<br>The forest honors you.";
-            } else if (transformationCount >= 1) {
-                message = "You embraced the spirit's form.<br>The dance lives within you.";
-            } else {
-                message = "You danced as human.<br>The spirits welcome your first steps.";
-            }
-            finalMessage.innerHTML = message;
-            
-            gameOverScreen.style.display = 'flex';
-            if (isMobile) mobileControls.style.display = 'none';
+        // Reset power-up effects
+        deactivatePowerUp();
+    }
+    
+    function restartGame() {
+        currentState = GameState.PLAYING;
+        gameOverScreen.style.display = 'none';
+        
+        // Reset game state
+        score = 0;
+        utsi = 0;
+        utsiRequired = 8;
+        gameSpeed = 2.8;
+        transformationCount = 0;
+        obstaclesPassed = 0;
+        utsiCollectedTotal = 0;
+        powerupsUsed = 0;
+        
+        // Reset player
+        player.character = 'MWANA';
+        player.color = characters.MWANA.color;
+        player.maskColor = characters.MWANA.maskColor;
+        player.width = characters.MWANA.width;
+        player.height = characters.MWANA.height;
+        player.x = 150;
+        player.y = groundY - characters.MWANA.height;
+        player.velocityY = 0;
+        player.isJumping = false;
+        player.isDucking = false;
+        player.duckTimer = 0;
+        player.trail = [];
+        player.hasShield = false;
+        
+        // Reset power-ups
+        activePowerUp = PowerUp.NONE;
+        powerUpTimer = 0;
+        powerupDisplay.style.display = 'none';
+        
+        // Clear game objects
+        obstacles = [];
+        utsiParticles = [];
+        powerUps = [];
+        particles = [];
+        warningIndicators = [];
+        backgroundDancers = [];
+        
+        if (isMobile) mobileControls.style.display = 'flex';
+        rhythmPulse.style.display = 'block';
+        lastObstacleTime = Date.now();
+        lastJumpTime = 0;
+        canDoubleJump = false;
+        lastRenderTime = 0;
+        
+        // Cancel any existing animation frame
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+        
+        gameLoop();
+    }
+    
+    function toggleAudio() {
+        audioEnabled = !audioEnabled;
+        audioToggle.textContent = audioEnabled ? '🔊' : '🔇';
+        
+        if (!audioEnabled) {
             rhythmPulse.style.display = 'none';
-            
-            // Reset power-up effects
-            deactivatePowerUp();
-        }
-        
-        function restartGame() {
-            currentState = GameState.PLAYING;
-            gameOverScreen.style.display = 'none';
-            
-            // Reset game state
-            score = 0;
-            utsi = 0;
-            utsiRequired = 8;
-            gameSpeed = 3.0;
-            transformationCount = 0;
-            obstaclesPassed = 0;
-            utsiCollectedTotal = 0;
-            powerupsUsed = 0;
-            
-            // Reset player
-            player.character = 'MWANA';
-            player.color = characters.MWANA.color;
-            player.maskColor = characters.MWANA.maskColor;
-            player.width = characters.MWANA.width;
-            player.height = characters.MWANA.height;
-            player.x = 150;
-            player.y = groundY - characters.MWANA.height;
-            player.velocityY = 0;
-            player.isJumping = false;
-            player.isDucking = false;
-            player.duckTimer = 0;
-            player.trail = [];
-            player.hasShield = false;
-            
-            // Reset power-ups
-            activePowerUp = PowerUp.NONE;
-            powerUpTimer = 0;
-            powerupDisplay.style.display = 'none';
-            
-            // Clear game objects
-            obstacles = [];
-            utsiParticles = [];
-            powerUps = [];
-            particles = [];
-            warningIndicators = [];
-            backgroundDancers = [];
-            
-            if (isMobile) mobileControls.style.display = 'flex';
+        } else if (currentState === GameState.PLAYING) {
             rhythmPulse.style.display = 'block';
-            lastObstacleTime = Date.now();
-            lastJumpTime = 0;
-            canDoubleJump = false;
-            
-            gameLoop();
         }
+    }
+    
+    function shareScore() {
+        const shareText = `I scored ${Math.floor(score)} points in NYAU: Echoes of the Great Dance! Can you match my dance?`;
         
-        function toggleAudio() {
-            audioEnabled = !audioEnabled;
-            audioToggle.textContent = audioEnabled ? '🔊' : '🔇';
-            
-            if (!audioEnabled) {
-                rhythmPulse.style.display = 'none';
-            } else if (currentState === GameState.PLAYING) {
-                rhythmPulse.style.display = 'block';
-            }
+        if (navigator.share) {
+            navigator.share({
+                title: 'NYAU: Echoes of the Great Dance',
+                text: shareText,
+                url: window.location.href
+            });
+        } else {
+            // Fallback to clipboard
+            navigator.clipboard.writeText(shareText + ' ' + window.location.href)
+                .then(() => alert('Score copied to clipboard!'));
         }
+    }
+    
+    // Event Listeners - OPTIMIZED for mobile
+    function setupEventListeners() {
+        // Start game button
+        startButton.addEventListener('click', startGame);
         
-        function shareScore() {
-            const shareText = `I scored ${score} points in NYAU: Echoes of the Great Dance! Can you match my dance?`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'NYAU: Echoes of the Great Dance',
-                    text: shareText,
-                    url: window.location.href
-                });
-            } else {
-                // Fallback to clipboard
-                navigator.clipboard.writeText(shareText + ' ' + window.location.href)
-                    .then(() => alert('Score copied to clipboard!'));
-            }
-        }
+        // View tutorial button
+        viewTutorialBtn.addEventListener('click', () => {
+            tutorialShown = false;
+            skipTutorial = false;
+            currentState = GameState.TUTORIAL;
+            tutorialOverlay.style.display = 'flex';
+        });
         
-        // Event Listeners
-        function setupEventListeners() {
-            // Start game button
-            startButton.addEventListener('click', startGame);
+        // View credits button
+        viewCreditsBtn.addEventListener('click', () => {
+            alert('NYAU: Echoes of the Great Dance\n\n' +
+                  'Inspired by Malawian Gule Wamkulu traditions\n' +
+                  'Celebrating the rich cultural heritage of Malawi\n' +
+                  'Created for Tay Grin\n\n' +
+                  'Play with rhythm. Dance with purpose.\n' +
+                  'May the spirits guide your steps.');
+        });
+        
+        // Close tutorial
+        tutorialClose.addEventListener('click', () => {
+            tutorialShown = true;
+            tutorialOverlay.style.display = 'none';
+            startGame();
+        });
+        
+        // Skip tutorial
+        skipTutorialBtn.addEventListener('click', () => {
+            skipTutorial = !skipTutorial;
+            localStorage.setItem('nyau_skip_tutorial', skipTutorial.toString());
+            skipTutorialBtn.textContent = skipTutorial ? 
+                '✓ Skip tutorial enabled' : 'Skip tutorial on next play';
+        });
+        
+        // Mobile controls with better touch handling
+        if (isMobile) {
+            const jumpBtn = document.querySelector('.control-btn.jump');
+            const duckBtn = document.querySelector('.control-btn.duck');
             
-            // View tutorial button
-            viewTutorialBtn.addEventListener('click', () => {
-                tutorialShown = false;
-                skipTutorial = false;
-                currentState = GameState.TUTORIAL;
-                tutorialOverlay.style.display = 'flex';
-            });
-            
-            // View credits button
-            viewCreditsBtn.addEventListener('click', () => {
-                alert('NYAU: Echoes of the Great Dance\n\n' +
-                      'Inspired by Malawian Gule Wamkulu traditions\n' +
-                      'Celebrating the rich cultural heritage of Malawi\n' +
-                      'Created for Tay Grin\n\n' +
-                      'Play with rhythm. Dance with purpose.\n' +
-                      'May the spirits guide your steps.');
-            });
-            
-            // Close tutorial
-            tutorialClose.addEventListener('click', () => {
-                tutorialShown = true;
-                tutorialOverlay.style.display = 'none';
-                startGame();
-            });
-            
-            // Skip tutorial
-            skipTutorialBtn.addEventListener('click', () => {
-                skipTutorial = !skipTutorial;
-                localStorage.setItem('nyau_skip_tutorial', skipTutorial.toString());
-                skipTutorialBtn.textContent = skipTutorial ? 
-                    '✓ Skip tutorial enabled' : 'Skip tutorial on next play';
-            });
-            
-            // Mobile controls
-            if (isMobile) {
-                document.querySelector('.control-btn.jump').addEventListener('touchstart', (e) => {
+            if (jumpBtn) {
+                jumpBtn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleJump();
+                }, { passive: false });
+                
+                jumpBtn.addEventListener('mousedown', (e) => {
                     e.preventDefault();
                     handleJump();
                 });
-                
-                document.querySelector('.control-btn.jump').addEventListener('mousedown', (e) => {
+            }
+            
+            if (duckBtn) {
+                duckBtn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    handleJump();
-                });
-                
-                document.querySelector('.control-btn.duck').addEventListener('touchstart', (e) => {
-                    e.preventDefault();
+                    e.stopPropagation();
                     handleDuck();
-                });
+                }, { passive: false });
                 
-                document.querySelector('.control-btn.duck').addEventListener('mousedown', (e) => {
+                duckBtn.addEventListener('mousedown', (e) => {
                     e.preventDefault();
                     handleDuck();
                 });
             }
             
-            // Keyboard controls for desktop
-            document.addEventListener('keydown', (e) => {
-                if (currentState === GameState.PLAYING) {
-                    switch(e.key) {
-                        case ' ':
-                        case 'ArrowUp':
-                        case 'w':
-                        case 'W':
-                            e.preventDefault();
-                            handleJump();
-                            break;
-                        case 'ArrowDown':
-                        case 's':
-                        case 'S':
-                            e.preventDefault();
-                            handleDuck();
-                            break;
-                    }
-                } else if (currentState === GameState.START && e.key === ' ') {
-                    startGame();
-                }
-            });
-            
-            // Prevent context menu
-            document.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                return false;
-            });
-            
-            // Game over buttons
-            restartBtn.addEventListener('click', restartGame);
-            menuBtn.addEventListener('click', () => {
-                currentState = GameState.START;
-                gameOverScreen.style.display = 'none';
-                startScreen.style.display = 'flex';
-                startScreen.style.opacity = '1';
-                if (isMobile) mobileControls.style.opacity = '1';
-                rhythmPulse.style.display = 'none';
-                deactivatePowerUp();
-            });
-            
-            shareBtn.addEventListener('click', shareScore);
-            
-            // Handle window resize
-            window.addEventListener('resize', initCanvas);
-            window.addEventListener('orientationchange', () => {
-                setTimeout(initCanvas, 100);
-            });
-            
-            // Prevent pull-to-refresh
-            let touchStartY = 0;
+            // Add swipe controls as alternative
+            let touchStartTime = 0;
             document.addEventListener('touchstart', (e) => {
                 touchStartY = e.touches[0].clientY;
+                touchStartX = e.touches[0].clientX;
+                touchStartTime = Date.now();
+                isSwiping = false;
             }, { passive: true });
             
             document.addEventListener('touchmove', (e) => {
-                if (currentState === GameState.PLAYING) {
-                    if (e.touches[0].clientY - touchStartY > 10) {
-                        e.preventDefault();
-                    }
+                if (!touchStartY || e.touches.length !== 1) return;
+                
+                const touchY = e.touches[0].clientY;
+                const touchX = e.touches[0].clientX;
+                const deltaY = touchY - touchStartY;
+                const deltaX = touchX - touchStartX;
+                
+                // If significant horizontal movement, it's a swipe
+                if (Math.abs(deltaX) > 20 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                    isSwiping = true;
                 }
-            }, { passive: false });
+                
+                // Only trigger if not swiping and not near control buttons
+                if (!isSwiping && Math.abs(deltaY) > 30 && Date.now() - touchStartTime < 300) {
+                    if (deltaY < 0) {
+                        // Swipe up = jump
+                        handleJump();
+                    } else {
+                        // Swipe down = duck
+                        handleDuck();
+                    }
+                    touchStartY = 0; // Reset to prevent multiple triggers
+                }
+            }, { passive: true });
             
-            // PWA install prompt
-            let deferredPrompt;
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                
-                // Show install button on start screen
-                const installBtn = document.createElement('button');
-                installBtn.className = 'start-btn start-btn-secondary';
-                installBtn.textContent = '📱 INSTALL APP';
-                installBtn.style.marginTop = '10px';
-                installBtn.addEventListener('click', async () => {
-                    if (deferredPrompt) {
-                        deferredPrompt.prompt();
-                        const { outcome } = await deferredPrompt.userChoice;
-                        if (outcome === 'accepted') {
-                            installBtn.remove();
-                        }
-                        deferredPrompt = null;
-                    }
-                });
-                
-                const startBtnContainer = document.querySelector('.start-btn-container');
-                if (startBtnContainer && !document.getElementById('installBtn')) {
-                    installBtn.id = 'installBtn';
-                    startBtnContainer.appendChild(installBtn);
-                }
-            });
+            document.addEventListener('touchend', () => {
+                touchStartY = 0;
+                touchStartX = 0;
+                isSwiping = false;
+            }, { passive: true });
         }
         
-        // Initialize
-        window.addEventListener('load', init);
-    </script>
+        // Keyboard controls for desktop
+        document.addEventListener('keydown', (e) => {
+            if (currentState === GameState.PLAYING) {
+                switch(e.key) {
+                    case ' ':
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                        e.preventDefault();
+                        handleJump();
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                    case 'S':
+                        e.preventDefault();
+                        handleDuck();
+                        break;
+                }
+            } else if (currentState === GameState.START && e.key === ' ') {
+                startGame();
+            }
+        });
+        
+        // Prevent context menu
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
+        
+        // Game over buttons
+        restartBtn.addEventListener('click', restartGame);
+        menuBtn.addEventListener('click', () => {
+            currentState = GameState.START;
+            gameOverScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+            startScreen.style.opacity = '1';
+            if (isMobile) mobileControls.style.opacity = '1';
+            rhythmPulse.style.display = 'none';
+            deactivatePowerUp();
+            
+            // Cancel animation frame
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        });
+        
+        shareBtn.addEventListener('click', shareScore);
+        
+        // Handle window resize and orientation change
+        let resizeTimeout;
+        function handleResize() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                initCanvas();
+                // If playing, continue the game
+                if (currentState === GameState.PLAYING) {
+                    render(); // Immediate render to avoid flicker
+                }
+            }, 250);
+        }
+        
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+        
+        // Prevent pull-to-refresh
+        document.addEventListener('touchmove', function(e) {
+            if (currentState === GameState.PLAYING && e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // PWA install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button on start screen
+            const installBtn = document.createElement('button');
+            installBtn.className = 'start-btn start-btn-secondary';
+            installBtn.textContent = '📱 INSTALL APP';
+            installBtn.style.marginTop = '10px';
+            installBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        installBtn.remove();
+                    }
+                    deferredPrompt = null;
+                }
+            });
+            
+            const startBtnContainer = document.querySelector('.start-btn-container');
+            if (startBtnContainer && !document.getElementById('installBtn')) {
+                installBtn.id = 'installBtn';
+                startBtnContainer.appendChild(installBtn);
+            }
+        });
+    }
+    
+    // Initialize when page loads
+    window.addEventListener('load', init);
+    
+    // Clean up on page unload
+    window.addEventListener('beforeunload', () => {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+    });
+</script>
 </body>
+
 </html>
