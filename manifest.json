@@ -1,7 +1,7 @@
 {
   "name": "NYAU: Echoes of the Great Dance",
   "short_name": "NYAU",
-  "description": "A cultural runner game based on Malawian Gule Wamkulu traditions",
+  "description": "A cultural runner game inspired by Malawian Gule Wamkulu traditions",
   "start_url": "/",
   "display": "standalone",
   "orientation": "landscape",
@@ -9,57 +9,75 @@
   "theme_color": "#0A0E14",
   "icons": [
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCA3MiA3MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSIzNiIgY3k9IjM2IiByPSIyNCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjM2IiBjeT0iMzYiIHI9IjE4IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCA3MiA3MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIGZpbGw9IiMwQTBFOEQiLz48cGF0aCBkPSJNMzYgMTJDNjAuMjUgMTIgNzIgMjQgNzIgMzZDMzYgNTQgMzYgNTQgMzYgNTRDMzYgNTQgMzYgNTQgMCAzNkMwIDI0IDExLjc1IDEyIDM2IDEyWiIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjM2IiBjeT0iMjciIHI9IjgiIGZpbGw9IiMwMDAwMDAiLz48cGF0aCBkPSJNMjggNDBDMjggNDAgNDQgNDAgNDQgNDAiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+",
       "sizes": "72x72",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSI0OCIgY3k9IjQ4IiByPSIzMiIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjQ4IiBjeT0iNDgiIHI9IjI0IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIGZpbGw9IiMwQTBFOEQiLz48cGF0aCBkPSJNNDggMTZDNzkuNDcgMTYgOTYgMzIgOTYgNDhDNDggNzIgNDggNzIgNDggNzJDNDggNzIgNDggNzIgMCA0OEMwIDMyIDE2LjUzIDE2IDQ4IDE2WiIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjQ4IiBjeT0iMzYiIHI9IjEwIiBmaWxsPSIjMDAwMDAwIi8+PHBhdGggZD0iTTM4IDU0QzM4IDU0IDU4IDU0IDU4IDU0IiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
       "sizes": "96x96",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MiIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiMwQTBFOEQiLz48cGF0aCBkPSJNNjQgMjFDOTkuODcgMjEgMTI4IDQ5IDEyOCA2NEM2NCA5NiA2NCA5NiA2NCA5NkM2NCA5NiA2NCA5NiAwIDY0QzAgNDkgMjguMTMgMjEgNjQgMjFaIiBmaWxsPSIjQzYwQzMwIi8+PGNpcmNsZSBjeD0iNjQiIGN5PSI0OCIgcj0iMTQiIGZpbGw9IiMwMDAwMDAiLz48cGF0aCBkPSJNNTEgNzJDNTEgNzIgNzcgNzIgNzcgNzIiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSI0Ii8+PC9zdmc+",
       "sizes": "128x128",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjE0NCIgdmlld0JveD0iMCAwIDE0NCAxNDQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE0NCIgaGVpZ2h0PSIxNDQiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSI3MiIgY3k9IjcyIiByPSI0OCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjcyIiBjeT0iNzIiIHI9IjM2IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjE0NCIgdmlld0JveD0iMCAwIDE0NCAxNDQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE0NCIgaGVpZ2h0PSIxNDQiIGZpbGw9IiMwQTBFOEQiLz48cGF0aCBkPSJNNzIgMjRDMTA4LjI1IDI0IDE0NCA1NyAxNDQgNzJDNzIgMTA4IDcyIDEwOCA3MiAxMDhDNzIgMTA4IDcyIDEwOCAwIDcyQzAgNTcgMzUuNzUgMjQgNzIgMjRaIiBmaWxsPSIjQzYwQzMwIi8+PGNpcmNsZSBjeD0iNzIiIGN5PSI1NCIgcj0iMTYiIGZpbGw9IiMwMDAwMDAiLz48cGF0aCBkPSJNNTggODFDNTggODEgODYgODEgODYgODEiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSI0Ii8+PC9zdmc+",
       "sizes": "144x144",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUyIiBoZWlnaHQ9IjE1MiIgdmlld0JveD0iMCAwIDE1MiAxNTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE1MiIgaGVpZ2h0PSIxNTIiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSI3NiIgY3k9Ijc2IiByPSI1MCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9Ijc2IiBjeT0iNzYiIHI9IjM4IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUyIiBoZWlnaHQ9IjE1MiIgdmlld0JveD0iMCAwIDE1MiAxNTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE1MiIgaGVpZ2h0PSIxNTIiIGZpbGw9IiMwQTBFOEQiLz48cGF0aCBkPSJNNzYgMjVjNDAuOCAwIDc2IDM1IDc2IDUxcy03NiA3Ni03NiA3NlMwIDc2IDAgNTFTMzUuMiAyNSA3NiAyNXoiIGZpbGw9IiNDNjBDMzAiLz48Y2lyY2xlIGN4PSI3NiIgY3k9IjU3IiByPSIxNyIgZmlsbD0iIzAwMDAwMCIvPjxwYXRoIGQ9Ik02MiA4NmMwIDAgMjggMCAyOCAwIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iNSIvPjwvc3ZnPg==",
       "sizes": "152x152",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI2NCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9Ijk2IiBjeT0iOTYiIHI9IjQ4IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIGZpbGw9IiMwQTBFOEQiLz48cGF0aCBkPSJNOTYgMzJjNTMuMDcgMCA5NiA0MyA5NiA2NC05NiA5Ni05NiA5Ni05NiA5NlMwIDk2IDAgOTYgNDIuOTMgMzIgOTYgMzJ6IiBmaWxsPSIjQzYwQzMwIi8+PGNpcmNsZSBjeD0iOTYiIGN5PSI3MiIgcj0iMjIiIGZpbGw9IiMwMDAwMDAiLz48cGF0aCBkPSJNNzYgMTA4YzAgMCA0MCAwIDQwIDAiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSI2Ii8+PC9zdmc+",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzg0IiBoZWlnaHQ9IjM4NCIgdmlld0JveD0iMCAwIDM4NCAzODQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjM4NCIgaGVpZ2h0PSIzODQiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSIxOTIiIGN5PSIxOTIiIHI9IjEyOCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjE5MiIgY3k9IjE5MiIgcj0iOTYiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzg0IiBoZWlnaHQ9IjM4NCIgdmlld0JveD0iMCAwIDM4NCAzODQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjM4NCIgaGVpZ2h0PSIzODQiIGZpbGw9IiMwQTBFOEQiLz48cGF0aCBkPSJNMTkyIDY0YzEwNi4xNCAwIDE5MiA4NiAxOTIgMTI4LTE5MiAxOTItMTkyIDE5Mi0xOTIgMTkyUzAgMTkyIDAgMTkyIDEwNS44NiA2NCAxOTIgNjR6IiBmaWxsPSIjQzYwQzMwIi8+PGNpcmNsZSBjeD0iMTkyIiBjeT0iMTQ0IiByPSI0NCIgZmlsbD0iIzAwMDAwMCIvPjxwYXRoIGQ9Ik0xNTIgMjE2YzAgMCA4MCAwIDgwIDAiIHN0cm9rZT0iIzAwMDAwMCIgc3Ryb2tlLXdpZHRoPSIxMiIvPjwvc3ZnPg==",
       "sizes": "384x384",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjE3MCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMTI4IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMwQTBFOEQiLz48cGF0aCBkPSJNMjU2IDg1YzE0MS41IDAgMjU2IDExNSAyNTYgMTcxLTI1NiAyNTYtMjU2IDI1Ni0yNTYgMjU2UzAgMjU2IDAgMjU2IDExNC41IDg1IDI1NiA4NXoiIGZpbGw9IiNDNjBDMzAiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIxOTIiIHI9IjU4IiBmaWxsPSIjMDAwMDAwIi8+PHBhdGggZD0iTTIwNCAyODhjMCAwIDEwNCAwIDEwNCAwIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMTYiLz48L3N2Zz4=",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }
   ],
-  "categories": ["games", "entertainment"],
+  "categories": ["games", "entertainment", "education"],
   "lang": "en",
   "dir": "ltr",
   "prefer_related_applications": false,
+  "scope": "/",
+  "screenshots": [
+    {
+      "src": "icons/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "NYAU Gameplay"
+    },
+    {
+      "src": "icons/screenshot-narrow.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "NYAU Mobile"
+    }
+  ],
   "shortcuts": [
     {
-      "name": "Start New Dance",
+      "name": "Begin Dance",
       "short_name": "Dance",
-      "description": "Begin a new dance with the spirits",
-      "url": "/"
+      "description": "Start a new spiritual journey",
+      "url": "/?start=true",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     }
   ]
 }
