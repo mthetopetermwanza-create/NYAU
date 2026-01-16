@@ -1,27 +1,65 @@
 {
   "name": "NYAU: Echoes of the Great Dance",
   "short_name": "NYAU",
-  "description": "A Gule Wamkulu-inspired rhythm runner game",
+  "description": "A cultural runner game based on Malawian Gule Wamkulu traditions",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "landscape",
   "background_color": "#0A0E14",
-  "theme_color": "#C60C30",
-  "orientation": "portrait-primary",
+  "theme_color": "#0A0E14",
   "icons": [
     {
-      "src": "https://img.icons8.com/color/96/000000/africa.png",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCA3MiA3MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSIzNiIgY3k9IjM2IiByPSIyNCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjM2IiBjeT0iMzYiIHI9IjE4IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "sizes": "72x72",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSI0OCIgY3k9IjQ4IiByPSIzMiIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjQ4IiBjeT0iNDgiIHI9IjI0IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
       "sizes": "96x96",
-      "type": "image/png"
+      "type": "image/svg+xml"
     },
     {
-      "src": "https://img.icons8.com/color/192/000000/africa.png",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyOCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSI2NCIgY3k9IjY0IiByPSI0MiIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjY0IiBjeT0iNjQiIHI9IjMwIiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "sizes": "128x128",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjE0NCIgdmlld0JveD0iMCAwIDE0NCAxNDQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE0NCIgaGVpZ2h0PSIxNDQiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSI3MiIgY3k9IjcyIiByPSI0OCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjcyIiBjeT0iNzIiIHI9IjM2IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "sizes": "144x144",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUyIiBoZWlnaHQ9IjE1MiIgdmlld0JveD0iMCAwIDE1MiAxNTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE1MiIgaGVpZ2h0PSIxNTIiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSI3NiIgY3k9Ijc2IiByPSI1MCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9Ijc2IiBjeT0iNzYiIHI9IjM4IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
+      "sizes": "152x152",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSI5NiIgY3k9Ijk2IiByPSI2NCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9Ijk2IiBjeT0iOTYiIHI9IjQ4IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://img.icons8.com/color/512/000000/africa.png",
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzg0IiBoZWlnaHQ9IjM4NCIgdmlld0JveD0iMCAwIDM4NCAzODQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjM4NCIgaGVpZ2h0PSIzODQiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSIxOTIiIGN5PSIxOTIiIHI9IjEyOCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjE5MiIgY3k9IjE5MiIgcj0iOTYiIGZpbGw9IiMwMDAwMDAiLz48L3N2Zz4=",
+      "sizes": "384x384",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMwQTBFOEQiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjE3MCIgZmlsbD0iI0M2MEMzMCIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMTI4IiBmaWxsPSIjMDAwMDAwIi8+PC9zdmc+",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Start New Dance",
+      "short_name": "Dance",
+      "description": "Begin a new dance with the spirits",
+      "url": "/"
     }
   ]
 }
